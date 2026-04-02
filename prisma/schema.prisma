@@ -1,0 +1,661 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  SALES_REP
+  CONNECTOR
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
+enum PipelineStage {
+  NOT_CONTACTED
+  NEEDS_VISIT
+  VISITED
+  SPOKE_TO_BUYER
+  SAMPLES_REQUESTED
+  PRICING_SENT
+  FOLLOW_UP_NEEDED
+  INTERESTED
+  CUSTOMER
+  LOST_LEAD
+}
+
+enum RestaurantType {
+  FINE_DINING
+  CASUAL
+  FAST_CASUAL
+  BAR
+  CAFE
+  FOOD_TRUCK
+  OTHER
+}
+
+enum VolumeEstimate {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ContactRole {
+  OWNER
+  CHEF
+  KITCHEN_MANAGER
+  PURCHASING_MANAGER
+  GENERAL_MANAGER
+  FRONT_DESK
+  OTHER
+}
+
+enum VisitType {
+  WALK_IN
+  SCHEDULED
+  FOLLOW_UP
+  SAMPLE_DROP
+  PHONE_CALL
+}
+
+enum MeetingType {
+  INTRO
+  PRICING_DISCUSSION
+  SAMPLE_DROP
+  FOLLOW_UP_CALL
+  ON_SITE_VISIT
+}
+
+enum TaskType {
+  CALL
+  REVISIT
+  SEND_PRICING
+  BRING_SAMPLE
+  ASK_FOR_BUYER
+  CONFIRM_MEETING
+  UPDATE_NOTE
+  OTHER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LossReason {
+  PRICE
+  SUPPLIER_LOYALTY
+  NO_NEED
+  TIMING
+  NO_DECISION_MAKER
+  NO_RESPONSE
+  SERVICE_ISSUE
+  OTHER
+}
+
+enum RestaurantSource {
+  MANUAL
+  GOOGLE_PLACES
+  CSV_IMPORT
+}
+
+enum TaskOutcome {
+  SPOKE_TO_OWNER
+  SPOKE_TO_MANAGER
+  SPOKE_TO_BUYER
+  LEFT_VOICEMAIL
+  NO_ANSWER
+  MEETING_SCHEDULED
+  SAMPLE_REQUESTED
+  PRICING_SENT
+  REVISITED
+  NOTE_UPDATED
+  OTHER
+}
+
+enum ActivityType {
+  RESTAURANT_CREATED
+  RESTAURANT_IMPORTED
+  VISIT_LOGGED
+  NOTE_ADDED
+  MEETING_SCHEDULED
+  MEETING_COMPLETED
+  STAGE_CHANGED
+  OWNERSHIP_ASSIGNED
+  WARM_INTRO_ADDED
+  SAMPLE_LOGGED
+  TASK_CREATED
+  TASK_COMPLETED
+  LEAD_WON
+  LEAD_LOST
+  FILE_UPLOADED
+  CONTACT_ADDED
+  MEETING_CANCELLED
+}
+
+enum NotificationType {
+  MEETING_SCHEDULED
+  MEETING_UPDATED
+  TASK_COMPLETED
+  TASK_OVERDUE
+  MEETING_REMINDER
+  FOLLOW_UP_DUE
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  name      String
+  email     String   @unique
+  role      Role       @default(SALES_REP)
+  status    UserStatus @default(PENDING)
+  phone     String?
+  avatarUrl String?
+  // Google Calendar OAuth — stored per user, sync is opt-in
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleCalendarSync Boolean  @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  assignedRestaurants  Restaurant[]        @relation("AssignedRep")
+  createdRestaurants   Restaurant[]        @relation("CreatedRestaurants")
+  visits               Visit[]
+  meetings             Meeting[]
+  tasks                Task[]
+  notes                Note[]
+  warmIntros           WarmIntro[]
+  activities           ActivityLog[]
+  territories          Territory[]         @relation("TerritoryRep")
+  supportingRepFor     RestaurantRep[]     @relation("SupportingReps")
+  addedSupportingReps  RestaurantRep[]     @relation("AddedSupportingReps")
+  creditAttributions   CreditAttribution[] @relation("CreditAttributions")
+  notifications        Notification[]
+
+  @@index([clerkId])
+  @@index([role])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────
+// TERRITORY
+// ─────────────────────────────────────────────────────────────
+
+model Territory {
+  id          String       @id @default(cuid())
+  name        String
+  cities      String[]
+  zipCodes    String[]
+  repId       String?
+  rep         User?        @relation("TerritoryRep", fields: [repId], references: [id])
+  restaurants Restaurant[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([repId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// RESTAURANT
+// ─────────────────────────────────────────────────────────────
+
+model Restaurant {
+  id               String          @id @default(cuid())
+  name             String
+  address          String
+  city             String
+  state            String
+  zip              String
+  phone            String?
+  email            String?
+  website          String?
+  googleMapsUrl    String?
+  cuisineType      String?
+  restaurantType   RestaurantType?
+  estimatedVolume  VolumeEstimate?
+  pipelineStage    PipelineStage   @default(NOT_CONTACTED)
+  opportunityScore Int             @default(0)
+  isCustomer       Boolean         @default(false)
+  isArchived       Boolean         @default(false)
+
+  // Discovery / import metadata
+  source        RestaurantSource @default(MANUAL)
+  sourcePlaceId String?          @unique  // Google Place ID — primary dedup key
+  lat           Float?
+  lng           Float?
+  importedAt    DateTime?
+  googleRating  Float?
+
+  // Operational info (from paper intake card)
+  deliveriesPerWeek      Int?
+  desiredDeliveryTime    String?
+  deliveryLocation       String?
+  paymentMethod          String?
+  billingTerms           String?
+  yearsInBusiness        Int?
+  isReferral             Boolean   @default(false)
+  referredBy             String?
+  additionalNotes        String?
+  followUpNotes          String?
+  nearbyProspectsVisited String?
+  creditAppSent          Boolean   @default(false)
+  creditAppSentAt        DateTime?
+
+  // Ownership — set automatically on creation, editable by admins
+  repId         String?
+  rep           User?      @relation("AssignedRep", fields: [repId], references: [id])
+  createdByUserId String?
+  createdBy     User?      @relation("CreatedRestaurants", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  territoryId   String?
+  territory     Territory? @relation(fields: [territoryId], references: [id])
+
+  // Duplicate detection — links to the canonical record
+  duplicateOfId String?
+  duplicateOf   Restaurant?  @relation("Duplicates", fields: [duplicateOfId], references: [id])
+  duplicates    Restaurant[] @relation("Duplicates")
+
+  contacts           Contact[]
+  visits             Visit[]
+  meetings           Meeting[]
+  tasks              Task[]
+  notes              Note[]
+  warmIntros         WarmIntro[]
+  samples            Sample[]
+  productInterests   ProductInterest[]
+  competitorNote     CompetitorNote?
+  files              File[]
+  stageHistory       StageHistory[]
+  winRecord          WinRecord?
+  lossRecord         LossRecord?
+  activities         ActivityLog[]
+  supportingReps     RestaurantRep[]
+  creditAttributions CreditAttribution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pipelineStage])
+  @@index([repId])
+  @@index([zip])
+  @@index([city])
+  @@index([isArchived])
+  @@index([opportunityScore])
+  @@index([name])
+  @@index([source])
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONTACT
+// ─────────────────────────────────────────────────────────────
+
+model Contact {
+  id                String     @id @default(cuid())
+  restaurantId      String
+  restaurant        Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name              String
+  role              ContactRole
+  phone             String?
+  email             String?
+  notes             String?
+  preferredContact  String?
+  relationshipScore Int        @default(1)
+  isPrimary         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// VISIT
+// ─────────────────────────────────────────────────────────────
+
+model Visit {
+  id                String     @id @default(cuid())
+  restaurantId      String
+  restaurant        Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  repId             String
+  rep               User       @relation(fields: [repId], references: [id])
+  visitDate         DateTime
+  visitType         VisitType
+  contactedPerson   String?
+  outcome           String?
+  notes             String?
+  objections        String?
+  productsDiscussed String[]
+  nextAction        String?
+  followUpDate      DateTime?
+  files             File[]
+  createdAt         DateTime   @default(now())
+
+  @@index([restaurantId])
+  @@index([repId])
+  @@index([visitDate])
+}
+
+// ─────────────────────────────────────────────────────────────
+// WARM INTRO
+// ─────────────────────────────────────────────────────────────
+
+model WarmIntro {
+  id               String     @id @default(cuid())
+  restaurantId     String
+  restaurant       Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  addedById        String
+  addedBy          User       @relation(fields: [addedById], references: [id])
+  introducedBy     String
+  relationship     String?
+  contactName      String?
+  contactRole      String?
+  contactPhone     String?
+  contactEmail     String?
+  notes            String?
+  whatToPitch      String?
+  productInterests String[]
+  bestTimeToVisit  String?
+  priority         Priority   @default(MEDIUM)
+  meetingDate      DateTime?
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([restaurantId])
+  @@index([priority])
+}
+
+// ─────────────────────────────────────────────────────────────
+// MEETING
+// ─────────────────────────────────────────────────────────────
+
+model Meeting {
+  id           String      @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  ownerId      String
+  owner        User        @relation(fields: [ownerId], references: [id])
+  title        String
+  meetingType  MeetingType
+  scheduledAt  DateTime
+  durationMins Int?
+  location     String?
+  attendees    String[]
+  notes        String?
+  outcome      String?
+  nextStep     String?
+  isCompleted   Boolean     @default(false)
+  completedAt   DateTime?
+  googleEventId String?     // Google Calendar event ID (null if not synced)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([restaurantId])
+  @@index([ownerId])
+  @@index([scheduledAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// TASK
+// ─────────────────────────────────────────────────────────────
+
+model Task {
+  id           String      @id @default(cuid())
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  assignedToId String
+  assignedTo   User        @relation(fields: [assignedToId], references: [id])
+  title        String
+  taskType     TaskType
+  dueDate      DateTime
+  priority     Priority    @default(MEDIUM)
+  isCompleted     Boolean      @default(false)
+  completedAt     DateTime?
+  notes           String?
+  completionNotes String?
+  outcomeType     TaskOutcome?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([assignedToId])
+  @@index([restaurantId])
+  @@index([dueDate])
+  @@index([isCompleted])
+}
+
+// ─────────────────────────────────────────────────────────────
+// RESTAURANT REP (supporting reps)
+// ─────────────────────────────────────────────────────────────
+
+model RestaurantRep {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("SupportingReps", fields: [userId], references: [id], onDelete: Cascade)
+  addedById    String
+  addedBy      User       @relation("AddedSupportingReps", fields: [addedById], references: [id])
+  addedAt      DateTime   @default(now())
+
+  @@unique([restaurantId, userId])
+  @@index([restaurantId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// CREDIT ATTRIBUTION
+// ─────────────────────────────────────────────────────────────
+
+model CreditAttribution {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("CreditAttributions", fields: [userId], references: [id], onDelete: Cascade)
+  percentage   Int        // 0–100; all rows for a restaurant should sum to 100
+  note         String?    // e.g. "Brought in the lead", "Closed the account"
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([restaurantId, userId])
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// NOTE
+// ─────────────────────────────────────────────────────────────
+
+model Note {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id])
+  body         String
+  isPrivate    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// SAMPLE
+// ─────────────────────────────────────────────────────────────
+
+model Sample {
+  id             String     @id @default(cuid())
+  restaurantId   String
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  sampleDate     DateTime
+  product        String
+  quantity       String?
+  receivedBy     String?
+  followUpResult String?
+  ledToInterest  Boolean?
+  notes          String?
+  createdAt      DateTime   @default(now())
+
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PRODUCT INTEREST
+// ─────────────────────────────────────────────────────────────
+
+model ProductInterest {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  product      String
+  notes        String?
+  createdAt    DateTime   @default(now())
+
+  @@unique([restaurantId, product])
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// COMPETITOR NOTE
+// ─────────────────────────────────────────────────────────────
+
+model CompetitorNote {
+  id              String     @id @default(cuid())
+  restaurantId    String     @unique
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  currentSupplier String?
+  complaints      String?
+  whyMightSwitch  String?
+  priceSensitive  Boolean?
+  qualityIssues   String?
+  serviceIssues   String?
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// STAGE HISTORY
+// ─────────────────────────────────────────────────────────────
+
+model StageHistory {
+  id           String         @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  changedById  String
+  fromStage    PipelineStage?
+  toStage      PipelineStage
+  notes        String?
+  changedAt    DateTime       @default(now())
+
+  @@index([restaurantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// WIN RECORD
+// ─────────────────────────────────────────────────────────────
+
+model WinRecord {
+  id            String     @id @default(cuid())
+  restaurantId  String     @unique
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  repId         String
+  firstProduct  String?
+  convertedAt   DateTime
+  leadSource    String?
+  warmIntroUsed Boolean    @default(false)
+  notes         String?
+  createdAt     DateTime   @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// LOSS RECORD
+// ─────────────────────────────────────────────────────────────
+
+model LossRecord {
+  id           String     @id @default(cuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  repId        String?
+  reason       LossReason
+  notes        String?
+  lostAt       DateTime
+  createdAt    DateTime   @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// FILE
+// ─────────────────────────────────────────────────────────────
+
+model File {
+  id           String      @id @default(cuid())
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  visitId      String?
+  visit        Visit?      @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  uploadedById String
+  fileName     String
+  fileUrl      String
+  fileType     String
+  sizeBytes    Int?
+  createdAt    DateTime    @default(now())
+
+  @@index([restaurantId])
+  @@index([visitId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACTIVITY LOG
+// ─────────────────────────────────────────────────────────────
+
+model ActivityLog {
+  id           String       @id @default(cuid())
+  restaurantId String?
+  restaurant   Restaurant?  @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  action       ActivityType
+  description  String
+  metadata     Json?
+  createdAt    DateTime     @default(now())
+
+  @@index([restaurantId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// NOTIFICATION
+// ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  link      String?          // optional deep-link, e.g. /restaurants/xxx
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([userId, isRead])
+}
