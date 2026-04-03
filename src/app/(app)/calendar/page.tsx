@@ -34,7 +34,7 @@ export default async function CalendarPage() {
 
   const user = await db.user.findUnique({
     where: { clerkId },
-    select: { id: true, role: true, googleCalendarSync: true },
+    select: { id: true, role: true, googleCalendarSync: true, googleSyncExpired: true },
   })
   if (!user) redirect("/api/auth/sync")
 
@@ -91,7 +91,10 @@ export default async function CalendarPage() {
       {/* ── Google Calendar banner ────────────────────────────────── */}
       {(isAdmin || user.role === "SALES_REP") && (
         <Suspense fallback={null}>
-          <GoogleCalendarBanner isConnected={user.googleCalendarSync ?? false} />
+          <GoogleCalendarBanner
+            isConnected={user.googleCalendarSync ?? false}
+            isExpired={user.googleSyncExpired ?? false}
+          />
         </Suspense>
       )}
 

@@ -1,97 +1,162 @@
 "use client"
 
 /**
- * GoogleCalendarBanner — shows Google Calendar sync status on the calendar page.
+ * GoogleCalendarBanner — Google Calendar sync status on the calendar page.
  *
- * Connected state: confirmation + disconnect button
- * Disconnected state: connect prompt
- * Query param ?google=connected|error surfaces feedback after the OAuth redirect
+ * Renders one of four states:
+ *   connected      — sync is active, green
+ *   expired        — tokens revoked/expired, amber reconnect prompt
+ *   disconnected   — never connected or cleanly disconnected, gray
+ *   not-configured — GOOGLE_* env vars missing (dev/staging only), muted warning
+ *
+ * State is derived from DB on the server (isConnected, isExpired props) and
+ * kept in local React state so Connect/Disconnect actions update instantly
+ * without a full server round-trip.
+ *
+ * OAuth callback results are surfaced via ?google=<result> query params:
+ *   connected | denied | error | not-configured
  */
 
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { CalendarCheck, CalendarX, ExternalLink } from "lucide-react"
+import { CalendarCheck, CalendarX, AlertTriangle, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+type SyncState = "connected" | "expired" | "disconnected" | "not-configured"
 
 interface GoogleCalendarBannerProps {
   isConnected: boolean
+  isExpired: boolean
 }
 
-export function GoogleCalendarBanner({ isConnected: initialConnected }: GoogleCalendarBannerProps) {
+export function GoogleCalendarBanner({ isConnected, isExpired }: GoogleCalendarBannerProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [connected, setConnected] = useState(initialConnected)
+
+  const [syncState, setSyncState] = useState<SyncState>(() => {
+    if (isConnected) return "connected"
+    if (isExpired) return "expired"
+    return "disconnected"
+  })
   const [disconnecting, setDisconnecting] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
-  // Surface OAuth callback result
+  // Surface OAuth callback results from the ?google= query param
   useEffect(() => {
-    const google = searchParams.get("google")
-    if (google === "connected") {
-      setConnected(true)
-      setToast("Google Calendar connected successfully.")
-      router.replace("/calendar")
-    } else if (google === "error") {
-      setToast("Could not connect Google Calendar. Please try again.")
-      router.replace("/calendar")
+    const result = searchParams.get("google")
+    if (!result) return
+
+    if (result === "connected") {
+      setSyncState("connected")
+      setToast("Google Calendar connected. New meetings you schedule will be added to your primary calendar.")
+    } else if (result === "denied") {
+      setToast("Google Calendar access was not granted. You can connect any time from this page.")
+    } else if (result === "not-configured") {
+      setSyncState("not-configured")
+      setToast("Google Calendar isn't set up for this environment. Contact your admin.")
+    } else if (result === "error") {
+      setToast("Could not connect to Google Calendar. Please try again.")
     }
+
+    // Clean up the query param without re-rendering the server component
+    router.replace("/calendar", { scroll: false })
   }, [searchParams, router])
 
   async function handleDisconnect() {
+    if (!confirm("Disconnect Google Calendar? Your existing CRM meetings won't be affected, but future meetings won't sync until you reconnect.")) return
     setDisconnecting(true)
     try {
-      await fetch("/api/auth/google/disconnect", { method: "POST" })
-      setConnected(false)
-      setToast("Google Calendar disconnected.")
+      const res = await fetch("/api/auth/google/disconnect", { method: "POST" })
+      if (res.ok) {
+        setSyncState("disconnected")
+        setToast("Google Calendar disconnected.")
+      } else {
+        setToast("Disconnect failed. Please try again.")
+      }
     } catch {
-      setToast("Failed to disconnect. Please try again.")
+      setToast("Network error. Please try again.")
     } finally {
       setDisconnecting(false)
     }
   }
 
+  function handleConnect() {
+    window.location.href = "/api/auth/google/connect"
+  }
+
   return (
-    <div className="mb-4">
+    <div className="mb-4 space-y-2">
+      {/* Toast */}
       {toast && (
-        <div className="mb-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-600">
           <span>{toast}</span>
-          <button onClick={() => setToast(null)} className="text-slate-400 hover:text-slate-600 ml-4">
+          <button
+            onClick={() => setToast(null)}
+            className="ml-4 text-slate-400 hover:text-slate-600"
+            aria-label="Dismiss"
+          >
             ✕
           </button>
         </div>
       )}
 
-      {connected ? (
+      {/* State banner */}
+      {syncState === "connected" && (
         <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm">
           <span className="flex items-center gap-2 text-green-800 font-medium">
-            <CalendarCheck className="h-4 w-4" />
-            Google Calendar sync is on — new meetings will be added to your calendar
+            <CalendarCheck className="h-4 w-4 shrink-0" />
+            Google Calendar sync is active — meetings you create from now on will appear in your primary Google Calendar
           </span>
           <Button
             size="sm"
             variant="ghost"
-            className="text-green-700 hover:text-green-900 hover:bg-green-100 h-7 text-xs"
+            className="ml-4 shrink-0 text-green-700 hover:text-green-900 hover:bg-green-100 h-7 text-xs"
             disabled={disconnecting}
             onClick={handleDisconnect}
           >
             {disconnecting ? "Disconnecting…" : "Disconnect"}
           </Button>
         </div>
-      ) : (
-        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
-          <span className="flex items-center gap-2 text-slate-600">
-            <CalendarX className="h-4 w-4 text-slate-400" />
-            Connect Google Calendar to auto-sync meetings
+      )}
+
+      {syncState === "expired" && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm">
+          <span className="flex items-center gap-2 text-amber-800 font-medium">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            Your Google Calendar connection has expired — reconnect to resume syncing new meetings
           </span>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs"
-            onClick={() => (window.location.href = "/api/auth/google/connect")}
+            className="ml-4 shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100 h-7 text-xs"
+            onClick={handleConnect}
           >
-            <ExternalLink className="h-3 w-3 mr-1.5" />
+            Reconnect
+          </Button>
+        </div>
+      )}
+
+      {syncState === "disconnected" && (
+        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
+          <span className="flex items-center gap-2 text-slate-500">
+            <CalendarX className="h-4 w-4 shrink-0 text-slate-400" />
+            Connect Google Calendar to automatically add new meetings to your primary calendar
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-4 shrink-0 h-7 text-xs"
+            onClick={handleConnect}
+          >
             Connect Google Calendar
           </Button>
+        </div>
+      )}
+
+      {syncState === "not-configured" && (
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-400">
+          <Settings className="h-3.5 w-3.5 shrink-0" />
+          Google Calendar integration is not configured for this environment.
         </div>
       )}
     </div>

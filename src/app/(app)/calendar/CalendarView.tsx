@@ -46,6 +46,7 @@ export interface CalendarMeeting {
   isCompleted: boolean
   restaurant: { id: string; name: string; city: string }
   owner: { id: string; name: string }
+  googleEventId?: string | null
 }
 
 interface CalendarViewProps {
@@ -227,6 +228,21 @@ export function CalendarView({ meetings, isAdmin, currentUserId }: CalendarViewP
                 <p className="text-xs text-green-700 bg-green-50 rounded px-2 py-1.5">
                   ✓ {detailMeeting.outcome}
                 </p>
+              )}
+            </div>
+
+            {/* Google Calendar sync status */}
+            <div className="flex items-center gap-1.5 text-xs">
+              {detailMeeting.googleEventId ? (
+                <span className="text-slate-400 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
+                  Synced to Google Calendar
+                </span>
+              ) : (
+                <span className="text-slate-300 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-200" />
+                  Not synced to Google Calendar
+                </span>
               )}
             </div>
 

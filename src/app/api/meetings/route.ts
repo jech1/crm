@@ -118,15 +118,16 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Sync to Google Calendar (fire-and-forget)
-    createCalendarEvent(user.id, meeting.id, {
+    // Sync to Google Calendar — awaited so googleEventId is persisted before
+    // the response is returned. Errors are caught inside and never throw here.
+    await createCalendarEvent(user.id, meeting.id, {
       title: meeting.title,
       scheduledAt: meeting.scheduledAt,
       durationMins: meeting.durationMins,
       location: meeting.location,
       notes: meeting.notes,
       restaurantName: meeting.restaurant.name,
-    }).catch(() => {})
+    })
 
     // Email confirmation to the meeting owner
     const { subject, html } = meetingScheduledTemplate({

@@ -63,16 +63,25 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
       },
     })
 
-    // Sync to Google Calendar if the meeting has an event and fields that affect it changed
-    if (meeting.googleEventId && (scheduledAt || rest.title || rest.durationMins !== undefined || rest.location !== undefined || rest.notes !== undefined)) {
-      updateCalendarEvent(meeting.ownerId, meeting.googleEventId, {
+    // Sync to Google Calendar if a linked event exists and any synced field changed.
+    // Awaited so that stale-ID cleanup and auth-expiry side-effects happen within
+    // this request. updateCalendarEvent catches its own errors and never throws.
+    if (
+      meeting.googleEventId &&
+      (scheduledAt ||
+        rest.title ||
+        rest.durationMins !== undefined ||
+        rest.location !== undefined ||
+        rest.notes !== undefined)
+    ) {
+      await updateCalendarEvent(meeting.ownerId, meeting.id, meeting.googleEventId, {
         title: updated.title,
         scheduledAt: updated.scheduledAt,
         durationMins: updated.durationMins,
         location: updated.location,
         notes: updated.notes,
         restaurantName: updated.restaurant.name,
-      }).catch(() => {})
+      })
     }
 
     // Log activity when completing
@@ -116,9 +125,10 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
 
     await db.meeting.delete({ where: { id } })
 
-    // Remove from Google Calendar (fire-and-forget)
+    // Remove from Google Calendar — awaited so auth-expiry side-effects are
+    // captured. deleteCalendarEvent treats 404 as success and never throws.
     if (meeting.googleEventId) {
-      deleteCalendarEvent(meeting.ownerId, meeting.googleEventId).catch(() => {})
+      await deleteCalendarEvent(meeting.ownerId, meeting.googleEventId)
     }
 
     await db.activityLog.create({

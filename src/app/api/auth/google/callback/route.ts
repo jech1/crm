@@ -1,8 +1,11 @@
 /**
  * GET /api/auth/google/callback
  *
- * Handles the Google OAuth callback. Exchanges the code for tokens,
- * stores them on the User record, and enables calendar sync.
+ * Handles the Google OAuth callback:
+ *   1. Validates the returned `state` param against the cookie (CSRF check)
+ *   2. Exchanges the code for tokens
+ *   3. Stores tokens on the User record, enables sync
+ *   4. Clears the state cookie and redirects to /calendar with a result param
  */
 
 import { type NextRequest, NextResponse } from "next/server"
@@ -13,48 +16,73 @@ import { db } from "@/lib/db"
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
 
 export async function GET(req: NextRequest) {
-  const calendarUrl = new URL("/calendar", APP_URL)
+  const { searchParams } = new URL(req.url)
 
   try {
     const { user } = await getAuthContext()
 
-    const { searchParams } = new URL(req.url)
     const code = searchParams.get("code")
-    const error = searchParams.get("error")
+    const returnedState = searchParams.get("state")
+    const oauthError = searchParams.get("error")
 
-    if (error || !code) {
-      console.warn("[google-oauth] Callback error:", error ?? "no code")
-      return NextResponse.redirect(
-        new URL("/calendar?google=error", APP_URL),
-      )
+    // User denied access on Google's consent screen
+    if (oauthError) {
+      console.warn("[google-oauth] User denied access or Google returned error:", oauthError)
+      return redirectWithCleanCookie("/calendar?google=denied")
     }
 
+    if (!code) {
+      return redirectWithCleanCookie("/calendar?google=error")
+    }
+
+    // ── CSRF: validate state ──────────────────────────────────────────────
+    const cookieState = req.cookies.get("google_oauth_state")?.value
+
+    if (!returnedState || !cookieState || returnedState !== cookieState) {
+      console.warn("[google-oauth] State mismatch — possible CSRF attempt", {
+        returnedState: returnedState ? "present" : "missing",
+        cookieState: cookieState ? "present" : "missing",
+        match: returnedState === cookieState,
+      })
+      return redirectWithCleanCookie("/calendar?google=error")
+    }
+
+    // ── Token exchange ────────────────────────────────────────────────────
     const oauth2 = getOAuth2Client()
     if (!oauth2) {
-      return NextResponse.redirect(new URL("/calendar?google=not-configured", APP_URL))
+      return redirectWithCleanCookie("/calendar?google=not-configured")
     }
 
     const { tokens } = await oauth2.getToken(code)
 
     if (!tokens.access_token || !tokens.refresh_token) {
-      console.warn("[google-oauth] Missing tokens in response")
-      return NextResponse.redirect(new URL("/calendar?google=error", APP_URL))
+      // This can happen if the user has connected before and Google
+      // doesn't re-issue a refresh token without `prompt: "consent"`.
+      // getAuthUrl always requests consent, so this should be rare.
+      console.warn("[google-oauth] Token exchange succeeded but refresh_token missing")
+      return redirectWithCleanCookie("/calendar?google=error")
     }
 
+    // ── Persist tokens ────────────────────────────────────────────────────
     await db.user.update({
       where: { id: user.id },
       data: {
         googleAccessToken: tokens.access_token,
         googleRefreshToken: tokens.refresh_token,
         googleCalendarSync: true,
+        googleSyncExpired: false, // clear any previous expiry flag
       },
     })
 
-    const response = NextResponse.redirect(new URL("/calendar?google=connected", APP_URL))
-    response.cookies.delete("google_oauth_state")
-    return response
+    return redirectWithCleanCookie("/calendar?google=connected")
   } catch (err) {
     console.error("[google-oauth] Callback failed:", err)
-    return NextResponse.redirect(calendarUrl)
+    return redirectWithCleanCookie("/calendar?google=error")
   }
+}
+
+function redirectWithCleanCookie(path: string): NextResponse {
+  const response = NextResponse.redirect(new URL(path, APP_URL))
+  response.cookies.delete("google_oauth_state")
+  return response
 }
