@@ -11,6 +11,7 @@
 import Link from "next/link"
 import { MapPin, Phone, Globe, User } from "lucide-react"
 import { StageBadge } from "../StageBadge"
+import { StageUpdateButton } from "../StageUpdateButton"
 import { WinLossButtons } from "../WinLossButtons"
 import { Button } from "@/components/ui/button"
 import type { RestaurantProfile } from "@/types"
@@ -39,7 +40,10 @@ export function ProfileHeader({ restaurant, canEdit }: ProfileHeaderProps) {
             <h1 className="text-xl font-semibold text-slate-900 leading-tight">
               {restaurant.name}
             </h1>
-            <StageBadge stage={restaurant.pipelineStage} />
+            {canEdit
+              ? <StageUpdateButton restaurantId={restaurant.id} currentStage={restaurant.pipelineStage} />
+              : <StageBadge stage={restaurant.pipelineStage} />
+            }
             {restaurant.isCustomer && (
               <span className="text-xs font-medium px-2 py-0.5 bg-green-100 text-green-700 rounded-md">
                 Customer
