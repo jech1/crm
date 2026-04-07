@@ -110,8 +110,8 @@ export function RestaurantTable({
     <div className="space-y-2">
       {/* ── Bulk toolbar ──────────────────────────────────────────── */}
       {isAdmin && selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-slate-50 border rounded-lg text-sm">
-          <span className="font-medium text-slate-700 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-lg text-sm">
+          <span className="font-medium text-slate-700 dark:text-slate-300 shrink-0">
             {selected.size} selected
           </span>
 
@@ -184,10 +184,10 @@ export function RestaurantTable({
       )}
 
       {/* ── Table ─────────────────────────────────────────────────── */}
-      <div className="rounded-lg border bg-white overflow-hidden">
+      <div className="rounded-lg border bg-white dark:bg-slate-800 dark:border-slate-700 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-slate-50">
+            <tr className="border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
               {isAdmin && (
                 <th className="px-4 py-3 w-10">
                   <Checkbox
@@ -199,21 +199,21 @@ export function RestaurantTable({
                   />
                 </th>
               )}
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Restaurant</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Stage</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">City</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Assigned Rep</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Score</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Visits</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Updated</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Restaurant</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Stage</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">City</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Assigned Rep</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Score</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Visits</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">Updated</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {restaurants.map((r) => (
               <tr
                 key={r.id}
-                className={`hover:bg-slate-50 transition-colors ${
-                  isAdmin && selected.has(r.id) ? "bg-green-50" : ""
+                className={`hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
+                  isAdmin && selected.has(r.id) ? "bg-green-50 dark:bg-green-900/20" : ""
                 }`}
               >
                 {isAdmin && (
@@ -231,36 +231,37 @@ export function RestaurantTable({
                 <td className="px-4 py-3">
                   <Link
                     href={`/restaurants/${r.id}`}
-                    className="font-medium text-slate-900 hover:text-green-700"
+                    className="font-medium text-slate-900 dark:text-white hover:text-green-700 dark:hover:text-green-400"
                   >
                     {r.name}
                   </Link>
-                  {r.phone && <p className="text-xs text-slate-400 mt-0.5">{r.phone}</p>}
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{r.address}</p>
+                  {r.phone && <p className="text-xs text-slate-400 dark:text-slate-500">{r.phone}</p>}
                 </td>
                 <td className="px-4 py-3">
                   <StageBadge stage={r.pipelineStage} />
                 </td>
-                <td className="px-4 py-3 text-slate-600">{r.city}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{r.city}</td>
                 <td className="px-4 py-3">
                   {r.rep ? (
-                    <span className="text-slate-700">{r.rep.name}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{r.rep.name}</span>
                   ) : (
-                    <span className="text-slate-400 text-xs">Unassigned</span>
+                    <span className="text-slate-400 dark:text-slate-500 text-xs">Unassigned</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-green-500 rounded-full"
                         style={{ width: `${r.opportunityScore}%` }}
                       />
                     </div>
-                    <span className="text-xs text-slate-500">{r.opportunityScore}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{r.opportunityScore}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-slate-600">{r._count.visits}</td>
-                <td className="px-4 py-3 text-slate-400 text-xs">
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{r._count.visits}</td>
+                <td className="px-4 py-3 text-slate-400 dark:text-slate-500 text-xs">
                   {formatRelativeTime(r.updatedAt)}
                 </td>
               </tr>

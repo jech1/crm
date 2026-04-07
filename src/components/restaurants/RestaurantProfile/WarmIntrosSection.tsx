@@ -55,9 +55,9 @@ export function WarmIntrosSection({
   }
 
   return (
-    <div className="rounded-xl border bg-white p-5">
+    <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-900">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
           Warm Intros ({warmIntros.length})
         </h2>
         {canAddWarmIntro && (
@@ -83,7 +83,7 @@ export function WarmIntrosSection({
       </div>
 
       {warmIntros.length === 0 ? (
-        <p className="text-sm text-slate-400 text-center py-3">
+        <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-3">
           {canAddWarmIntro ? "No warm intros yet. Add one above." : "No warm intros yet."}
         </p>
       ) : (
@@ -91,7 +91,7 @@ export function WarmIntrosSection({
           {warmIntros.map((intro) => (
             <li key={intro.id} className="text-sm">
               <div className="flex items-center justify-between">
-                <p className="font-medium text-slate-900">Via {intro.introducedBy}</p>
+                <p className="font-medium text-slate-900 dark:text-white">Via {intro.introducedBy}</p>
                 <span
                   className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded font-medium",
@@ -102,7 +102,7 @@ export function WarmIntrosSection({
                 </span>
               </div>
               {intro.contactName && (
-                <p className="text-slate-500 mt-0.5">
+                <p className="text-slate-500 dark:text-slate-400 mt-0.5">
                   Ask for: {intro.contactName}
                   {intro.contactRole ? ` (${intro.contactRole})` : ""}
                 </p>
@@ -111,9 +111,9 @@ export function WarmIntrosSection({
                 <p className="text-slate-500 mt-1">Pitch: {intro.whatToPitch}</p>
               )}
               {intro.bestTimeToVisit && (
-                <p className="text-xs text-slate-400 mt-1">Best time: {intro.bestTimeToVisit}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Best time: {intro.bestTimeToVisit}</p>
               )}
-              <p className="text-xs text-slate-400 mt-1">Added by {intro.addedBy.name}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Added by {intro.addedBy.name}</p>
             </li>
           ))}
         </ul>

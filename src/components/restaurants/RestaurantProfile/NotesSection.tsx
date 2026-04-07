@@ -51,8 +51,8 @@ export function NotesSection({ notes, restaurantId }: NotesSectionProps) {
   }
 
   return (
-    <div className="rounded-xl border bg-white p-5">
-      <h2 className="text-sm font-semibold text-slate-900 mb-4">Notes ({notes.length})</h2>
+    <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+      <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Notes ({notes.length})</h2>
 
       {/* Add note form */}
       <form onSubmit={handleSubmit} className="mb-5">
@@ -76,18 +76,18 @@ export function NotesSection({ notes, restaurantId }: NotesSectionProps) {
       {/* Notes list */}
       {notes.length === 0 ? (
         <div className="text-center py-6">
-          <FileText className="h-7 w-7 text-slate-200 mx-auto mb-2" />
-          <p className="text-sm text-slate-400">No notes yet.</p>
+          <FileText className="h-7 w-7 text-slate-200 dark:text-slate-600 mx-auto mb-2" />
+          <p className="text-sm text-slate-400 dark:text-slate-500">No notes yet.</p>
         </div>
       ) : (
         <ul className="space-y-4">
           {notes.map((note) => (
             <li key={note.id}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-slate-700">{note.author.name}</span>
-                <span className="text-xs text-slate-400">{formatRelativeTime(note.createdAt)}</span>
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{note.author.name}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">{formatRelativeTime(note.createdAt)}</span>
               </div>
-              <p className="text-sm text-slate-700 whitespace-pre-line">{note.body}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{note.body}</p>
             </li>
           ))}
         </ul>

@@ -52,7 +52,7 @@ function Avatar({ user }: { user: { name: string; avatarUrl: string | null } }) 
     )
   }
   return (
-    <div className="h-7 w-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600">
+    <div className="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-200">
       {user.name.charAt(0).toUpperCase()}
     </div>
   )
@@ -95,9 +95,9 @@ export function TeamSection({
   const hasCreditData = creditAttributions.length > 0
 
   return (
-    <div className="rounded-xl border bg-white p-5">
+    <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <Users className="h-3.5 w-3.5 text-slate-400" />
           Team
         </h2>
@@ -121,8 +121,8 @@ export function TeamSection({
           <div className="flex items-center gap-2.5">
             <Avatar user={primaryRep} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900 truncate">{primaryRep.name}</p>
-              <p className="text-xs text-slate-400 truncate">{primaryRep.email}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{primaryRep.name}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{primaryRep.email}</p>
             </div>
             <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200">
               <Crown className="h-2.5 w-2.5" />
@@ -130,14 +130,14 @@ export function TeamSection({
             </span>
           </div>
         ) : (
-          <p className="text-xs text-slate-400 italic">No primary rep assigned</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic">No primary rep assigned</p>
         )}
 
         {/* Supporting reps */}
         {supportingReps.length > 0 && (
           <>
-            <div className="border-t pt-3">
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-2">
+            <div className="border-t dark:border-slate-700 pt-3">
+              <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
                 Supporting
               </p>
               <div className="space-y-2">
@@ -145,8 +145,8 @@ export function TeamSection({
                   <div key={sr.id} className="flex items-center gap-2.5 group">
                     <Avatar user={sr.user} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">{sr.user.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{sr.user.email}</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{sr.user.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{sr.user.email}</p>
                     </div>
                     <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded border border-blue-200">
                       <Star className="h-2.5 w-2.5" />
@@ -171,8 +171,8 @@ export function TeamSection({
 
         {/* Credit attribution */}
         {hasCreditData && (
-          <div className="border-t pt-3">
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1">
+          <div className="border-t dark:border-slate-700 pt-3">
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1">
               <Percent className="h-2.5 w-2.5" />
               Credit Split
             </p>
@@ -180,13 +180,13 @@ export function TeamSection({
               {creditAttributions.map((ca) => (
                 <div key={ca.id} className="flex items-center gap-2">
                   <Avatar user={ca.user} />
-                  <span className="text-xs text-slate-600 flex-1 truncate">{ca.user.name}</span>
-                  <span className="text-xs font-semibold text-slate-900">{ca.percentage}%</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 flex-1 truncate">{ca.user.name}</span>
+                  <span className="text-xs font-semibold text-slate-900 dark:text-white">{ca.percentage}%</span>
                 </div>
               ))}
             </div>
             {/* Visual bar */}
-            <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden flex">
+            <div className="mt-2 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden flex">
               {creditAttributions.map((ca, i) => (
                 <div
                   key={ca.id}
@@ -202,7 +202,7 @@ export function TeamSection({
         )}
 
         {supportingReps.length === 0 && !hasCreditData && (
-          <p className="text-xs text-slate-400 italic text-center py-1">
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-1">
             No supporting reps
           </p>
         )}

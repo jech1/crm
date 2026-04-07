@@ -28,7 +28,7 @@ export interface DuplicateCheckResult {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Name normalization for fuzzy matching
+// Normalization helpers
 // ─────────────────────────────────────────────────────────────
 
 function normalizeName(name: string): string {
@@ -36,6 +36,20 @@ function normalizeName(name: string): string {
     .toLowerCase()
     .replace(/\b(the|a|an|&|and)\b/g, "")  // remove common filler words
     .replace(/[^a-z0-9]/g, "")             // strip punctuation/spaces
+    .trim()
+}
+
+/**
+ * Normalize a street address for comparison.
+ * Lowercases and strips punctuation. Does NOT expand abbreviations —
+ * false negatives (missing a duplicate) are safer than false positives
+ * (blocking a legitimate same-name different-address location).
+ */
+export function normalizeAddress(address: string): string {
+  return address
+    .toLowerCase()
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
+    .replace(/\s+/g, " ")
     .trim()
 }
 
@@ -99,25 +113,35 @@ export async function checkForDuplicates(
 }
 
 // ─────────────────────────────────────────────────────────────
-// Name + city check — used as final guard during import
-// One DB query per restaurant, so called sequentially during import loop.
+// Name + address check — final guard during import and manual create.
+//
+// A true duplicate requires matching ALL of:
+//   normalized name + normalized address + city + zip
+//
+// This intentionally allows same-name restaurants at different addresses
+// (chain locations, franchises, etc.) in the same city/zip.
 // ─────────────────────────────────────────────────────────────
 
 export async function checkNameCityDuplicate(
   name: string,
   city: string,
   zip: string,
+  address: string,
 ): Promise<string | null> {
-  const normalizedInput = normalizeName(name)
+  const normalizedName = normalizeName(name)
+  const normalizedAddr = normalizeAddress(address)
 
   // Fetch all restaurants in the same city/zip (usually a small set)
   const candidates = await db.restaurant.findMany({
     where: { city: { equals: city, mode: "insensitive" }, zip },
-    select: { id: true, name: true },
+    select: { id: true, name: true, address: true },
   })
 
   for (const candidate of candidates) {
-    if (normalizeName(candidate.name) === normalizedInput) {
+    if (
+      normalizeName(candidate.name) === normalizedName &&
+      normalizeAddress(candidate.address) === normalizedAddr
+    ) {
       return candidate.id
     }
   }

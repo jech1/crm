@@ -31,6 +31,10 @@ export const createRestaurantSchema = z.object({
   nearbyProspectsVisited: z.string().optional(),
   creditAppSent: z.boolean().optional(),
   creditAppSentAt: z.string().datetime().optional().nullable(),
+  // Set to true to bypass the same-location duplicate check on create.
+  // Used when a rep confirms they are intentionally adding a second
+  // location that shares a name and address with an existing record.
+  skipDuplicateCheck: z.boolean().optional(),
 })
 
 export const updateRestaurantSchema = createRestaurantSchema.partial()

@@ -7,6 +7,7 @@
  */
 
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createRestaurantSchema, type CreateRestaurantInput } from "@/lib/validations/restaurant"
@@ -49,11 +50,13 @@ export function NewRestaurantForm({
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [duplicateId, setDuplicateId] = useState<string | null>(null)
   const [selectedRepId, setSelectedRepId] = useState<string>(currentUserId)
 
   const {
     register,
     handleSubmit,
+    getValues,
     setValue,
     formState: { errors },
   } = useForm<CreateRestaurantInput>({
@@ -61,14 +64,16 @@ export function NewRestaurantForm({
     defaultValues: { state: "AZ" },
   })
 
-  async function onSubmit(data: CreateRestaurantInput) {
+  async function submitCreate(data: CreateRestaurantInput, skipDuplicateCheck = false) {
     setSubmitting(true)
     setError(null)
+    setDuplicateId(null)
     try {
       const payload = {
         ...data,
         // Only include repId for admin — REP ownership is enforced server-side
         ...(isAdmin && selectedRepId ? { repId: selectedRepId } : {}),
+        ...(skipDuplicateCheck ? { skipDuplicateCheck: true } : {}),
       }
       const res = await fetch("/api/restaurants", {
         method: "POST",
@@ -76,6 +81,11 @@ export function NewRestaurantForm({
         body: JSON.stringify(payload),
       })
       const json = await res.json()
+      if (res.status === 409) {
+        setDuplicateId(json.existingId ?? null)
+        setError(json.error ?? "This restaurant may already exist.")
+        return
+      }
       if (!res.ok) throw new Error(json.error ?? "Failed to create restaurant")
       router.push(`/restaurants/${json.data.id}`)
     } catch (err) {
@@ -83,6 +93,10 @@ export function NewRestaurantForm({
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function onSubmit(data: CreateRestaurantInput) {
+    void submitCreate(data)
   }
 
   return (
@@ -97,7 +111,34 @@ export function NewRestaurantForm({
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border bg-white p-6 space-y-5">
-        {error && (
+        {/* Duplicate warning — same address already in CRM */}
+        {duplicateId && (
+          <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 space-y-2">
+            <p className="font-medium">This location may already exist in the CRM.</p>
+            <p className="text-xs text-amber-700">{error}</p>
+            <div className="flex items-center gap-3 pt-1">
+              <Link
+                href={`/restaurants/${duplicateId}`}
+                className="text-xs font-medium underline underline-offset-2 hover:text-amber-900"
+              >
+                View existing record →
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  // Re-submit with force flag — rep confirmed it is a genuinely different location
+                  void submitCreate(getValues(), true)
+                }}
+                className="text-xs font-medium text-amber-800 hover:text-amber-900 underline underline-offset-2"
+              >
+                Add anyway (different location)
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Generic error (non-duplicate) */}
+        {error && !duplicateId && (
           <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
             {error}
           </div>

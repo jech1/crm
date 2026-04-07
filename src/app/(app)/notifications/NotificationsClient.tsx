@@ -65,9 +65,9 @@ export function NotificationsClient({ notifications: initial }: Props) {
 
   if (notifications.length === 0) {
     return (
-      <div className="rounded-xl border bg-white px-5 py-12 text-center">
-        <Bell className="h-8 w-8 text-slate-200 mx-auto mb-2" />
-        <p className="text-sm text-slate-400">No notifications yet.</p>
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 px-5 py-12 text-center">
+        <Bell className="h-8 w-8 text-slate-200 dark:text-slate-600 mx-auto mb-2" />
+        <p className="text-sm text-slate-400 dark:text-slate-500">No notifications yet.</p>
       </div>
     )
   }
@@ -79,7 +79,7 @@ export function NotificationsClient({ notifications: initial }: Props) {
           <button
             onClick={markAllRead}
             disabled={markingAll}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-50"
           >
             <CheckCheck className="h-3.5 w-3.5" />
             {markingAll ? "Marking…" : "Mark all as read"}
@@ -87,13 +87,13 @@ export function NotificationsClient({ notifications: initial }: Props) {
         </div>
       )}
 
-      <div className="rounded-xl border bg-white divide-y">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 divide-y dark:divide-slate-700">
         {notifications.map((n) => (
           <div
             key={n.id}
             className={cn(
               "flex items-start gap-4 px-5 py-4 transition-colors",
-              !n.isRead && "bg-blue-50/40",
+              !n.isRead && "bg-blue-50/40 dark:bg-blue-900/10",
             )}
             onClick={() => { if (!n.isRead) markRead(n.id) }}
           >
@@ -104,9 +104,9 @@ export function NotificationsClient({ notifications: initial }: Props) {
               )}
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-800">{n.title}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{n.body}</p>
-              <p className="text-xs text-slate-400 mt-1">{formatRelativeTime(n.createdAt)}</p>
+              <p className="text-sm font-medium text-slate-800 dark:text-white">{n.title}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{n.body}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{formatRelativeTime(n.createdAt)}</p>
             </div>
             {n.link && (
               <Link

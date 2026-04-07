@@ -19,9 +19,9 @@ interface VisitHistoryProps {
 
 export function VisitHistory({ visits, restaurantId, canLog }: VisitHistoryProps) {
   return (
-    <div className="rounded-xl border bg-white p-5">
+    <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-900">Visit History ({visits.length})</h2>
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Visit History ({visits.length})</h2>
         {canLog && (
           <Button asChild size="sm" variant="outline">
             <Link href={`/visits/new?restaurantId=${restaurantId}`}>
@@ -34,33 +34,33 @@ export function VisitHistory({ visits, restaurantId, canLog }: VisitHistoryProps
 
       {visits.length === 0 ? (
         <div className="text-center py-8">
-          <MapPin className="h-8 w-8 text-slate-200 mx-auto mb-2" />
-          <p className="text-sm text-slate-400">No visits logged yet.</p>
+          <MapPin className="h-8 w-8 text-slate-200 dark:text-slate-600 mx-auto mb-2" />
+          <p className="text-sm text-slate-400 dark:text-slate-500">No visits logged yet.</p>
         </div>
       ) : (
         <ul className="space-y-4">
           {visits.map((visit) => (
-            <li key={visit.id} className="border-l-2 border-slate-100 pl-4">
+            <li key={visit.id} className="border-l-2 border-slate-100 dark:border-slate-700 pl-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                       {VISIT_TYPE_LABELS[visit.visitType]}
                     </span>
                     {visit.contactedPerson && (
-                      <span className="text-xs text-slate-400">with {visit.contactedPerson}</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500">with {visit.contactedPerson}</span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-500 mt-0.5">{formatDate(visit.visitDate)}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{formatDate(visit.visitDate)}</p>
                 </div>
-                <span className="text-xs text-slate-400">{visit.rep.name}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">{visit.rep.name}</span>
               </div>
 
               {visit.outcome && (
-                <p className="text-sm text-slate-700 mt-2">{visit.outcome}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 mt-2">{visit.outcome}</p>
               )}
               {visit.objections && (
-                <p className="text-xs text-slate-500 mt-1 italic">Objection: {visit.objections}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 italic">Objection: {visit.objections}</p>
               )}
               {visit.nextAction && (
                 <p className="text-xs text-green-600 font-medium mt-1">Next: {visit.nextAction}</p>
@@ -68,7 +68,7 @@ export function VisitHistory({ visits, restaurantId, canLog }: VisitHistoryProps
               {visit.productsDiscussed.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {visit.productsDiscussed.map((p) => (
-                    <span key={p} className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+                    <span key={p} className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">
                       {p}
                     </span>
                   ))}

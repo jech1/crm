@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
         select: {
           id: true,
           name: true,
+          address: true,
           city: true,
           state: true,
           pipelineStage: true,

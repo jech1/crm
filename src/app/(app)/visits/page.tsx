@@ -65,23 +65,23 @@ export default async function VisitsPage() {
       {/* Quick stats */}
       {visits.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="rounded-xl border bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-slate-900">{thisWeek.length}</p>
-            <p className="text-xs text-slate-500 mt-0.5">This week</p>
+          <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-4 text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{thisWeek.length}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">This week</p>
           </div>
-          <div className="rounded-xl border bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-slate-900">{thisMonth.length + thisWeek.length}</p>
-            <p className="text-xs text-slate-500 mt-0.5">This month</p>
+          <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-4 text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{thisMonth.length + thisWeek.length}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">This month</p>
           </div>
-          <div className="rounded-xl border bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-slate-900">{visits.length}</p>
-            <p className="text-xs text-slate-500 mt-0.5">All time</p>
+          <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-4 text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{visits.length}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">All time</p>
           </div>
         </div>
       )}
 
       {visits.length === 0 ? (
-        <div className="rounded-xl border bg-white p-12">
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-12">
           <EmptyState
             icon={Footprints}
             title="No visits logged yet"
@@ -141,13 +141,13 @@ function VisitGroup({
 }) {
   return (
     <div>
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">{title}</h2>
-      <div className="rounded-xl border bg-white divide-y">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">{title}</h2>
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 divide-y dark:divide-slate-700">
         {visits.map((visit) => (
           <div key={visit.id} className="flex items-start gap-4 px-5 py-4">
             {/* Date column */}
             <div className="w-24 shrink-0">
-              <p className="text-sm font-medium text-slate-900">{formatDate(visit.visitDate)}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDate(visit.visitDate)}</p>
               <span
                 className={cn(
                   "text-[10px] font-medium px-1.5 py-0.5 rounded mt-1 inline-block",
@@ -162,22 +162,22 @@ function VisitGroup({
             <div className="flex-1 min-w-0">
               <Link
                 href={`/restaurants/${visit.restaurant.id}`}
-                className="text-sm font-semibold text-slate-900 hover:text-green-700"
+                className="text-sm font-semibold text-slate-900 dark:text-white hover:text-green-700 dark:hover:text-green-400"
               >
                 {visit.restaurant.name}
               </Link>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-400 dark:text-slate-500">
                 {visit.restaurant.city}, {visit.restaurant.state}
               </p>
 
               {visit.contactedPerson && (
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   Spoke with <span className="font-medium">{visit.contactedPerson}</span>
                 </p>
               )}
 
               {visit.outcome && (
-                <p className="text-xs text-slate-600 mt-1 bg-slate-50 rounded px-2 py-1">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 bg-slate-50 dark:bg-slate-700/50 rounded px-2 py-1">
                   {visit.outcome}
                 </p>
               )}
@@ -204,7 +204,7 @@ function VisitGroup({
             </div>
 
             {showRep && (
-              <span className="text-xs text-slate-400 shrink-0">{visit.rep.name}</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">{visit.rep.name}</span>
             )}
           </div>
         ))}

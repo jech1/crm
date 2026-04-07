@@ -54,10 +54,10 @@ export function TaskList({ overdue, dueToday, upcoming, recentlyCompleted }: Tas
 
   if (total === 0 && recentlyCompleted.length === 0) {
     return (
-      <div className="rounded-xl border bg-white p-12 text-center">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-12 text-center">
         <CheckCheck className="h-10 w-10 text-green-300 mx-auto mb-3" />
-        <p className="text-sm font-medium text-slate-700">All caught up!</p>
-        <p className="text-sm text-slate-400 mt-1">No open tasks right now.</p>
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">All caught up!</p>
+        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">No open tasks right now.</p>
       </div>
     )
   }
@@ -102,10 +102,10 @@ export function TaskList({ overdue, dueToday, upcoming, recentlyCompleted }: Tas
 
         {recentlyCompleted.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-3">
               Completed — Last 14 Days ({recentlyCompleted.length})
             </h2>
-            <div className="rounded-xl border bg-white divide-y">
+            <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 divide-y dark:divide-slate-700">
               {recentlyCompleted.map((task) => (
                 <CompletedTaskRow key={task.id} task={task} />
               ))}
@@ -144,7 +144,7 @@ function TaskGroup({
       >
         {title}
       </h2>
-      <div className="rounded-xl border bg-white divide-y">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 divide-y dark:divide-slate-700">
         {tasks.map((task) => (
           <OpenTaskRow key={task.id} task={task} variant={variant} onComplete={onComplete} />
         ))}
@@ -179,7 +179,7 @@ function OpenTaskRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-medium text-slate-900">{task.title}</p>
+            <p className="text-sm font-medium text-slate-900 dark:text-white">{task.title}</p>
             {task.restaurant && (
               <Link
                 href={`/restaurants/${task.restaurant.id}`}
@@ -213,10 +213,10 @@ function OpenTaskRow({
           </div>
         </div>
 
-        <p className="text-xs text-slate-400 mt-0.5">{TASK_TYPE_LABELS[task.taskType]}</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{TASK_TYPE_LABELS[task.taskType]}</p>
 
         {task.notes && (
-          <p className="text-xs text-slate-400 mt-1 italic">{task.notes}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 italic">{task.notes}</p>
         )}
       </div>
     </div>
@@ -233,7 +233,7 @@ function CompletedTaskRow({ task }: { task: TaskRow }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-slate-500 line-through">{task.title}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-500 line-through">{task.title}</p>
             {task.restaurant && (
               <Link
                 href={`/restaurants/${task.restaurant.id}`}
@@ -263,7 +263,7 @@ function CompletedTaskRow({ task }: { task: TaskRow }) {
         </div>
 
         {task.completionNotes && (
-          <p className="text-xs text-slate-500 mt-1 bg-slate-50 rounded px-2 py-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 bg-slate-50 dark:bg-slate-700/50 rounded px-2 py-1">
             {task.completionNotes}
           </p>
         )}

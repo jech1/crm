@@ -115,10 +115,16 @@ export async function POST(req: NextRequest) {
         continue
       }
 
-      // ── Guard 2: phone match ────────────────────────────────
-      if (item.phone) {
+      // ── Guard 2: phone match (scoped to same city+zip) ────────
+      // Chain locations can share a corporate phone — only treat as a
+      // duplicate if the phone AND location (city+zip) both match.
+      if (item.phone && item.city && item.zip) {
         const existingByPhone = await db.restaurant.findFirst({
-          where: { phone: item.phone },
+          where: {
+            phone: item.phone,
+            city: { equals: item.city, mode: "insensitive" },
+            zip: item.zip,
+          },
           select: { id: true },
         })
         if (existingByPhone) {
@@ -132,12 +138,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // ── Guard 3: normalized name + city ─────────────────────
+      // ── Guard 3: normalized name + address + city + zip ──────
       if (item.city && item.zip) {
         const existingByName = await checkNameCityDuplicate(
           item.name,
           item.city,
           item.zip,
+          item.address,
         )
         if (existingByName) {
           skipped.push({

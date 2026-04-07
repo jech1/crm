@@ -56,7 +56,7 @@ export function TasksPageClient({
                 const v = e.target.value
                 router.push(v ? `/tasks?repId=${v}` : "/tasks")
               }}
-              className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="text-xs border border-slate-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">All reps</option>
               {reps.map((r) => (

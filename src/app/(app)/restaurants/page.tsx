@@ -121,7 +121,9 @@ export default async function RestaurantsPage({
         <Link
           href="/restaurants"
           className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            !stage ? "bg-slate-900 text-white" : "bg-white border text-slate-600 hover:bg-slate-50"
+            !stage
+              ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+              : "bg-white dark:bg-slate-800 border dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
           }`}
         >
           All
@@ -131,7 +133,9 @@ export default async function RestaurantsPage({
             key={s}
             href={`/restaurants?stage=${s}${q ? `&q=${q}` : ""}`}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              stage === s ? "bg-slate-900 text-white" : "bg-white border text-slate-600 hover:bg-slate-50"
+              stage === s
+                ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                : "bg-white dark:bg-slate-800 border dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
             }`}
           >
             {PIPELINE_STAGE_LABELS[s]}
@@ -143,7 +147,7 @@ export default async function RestaurantsPage({
 
       {/* Pagination */}
       {total > limit && (
-        <div className="flex items-center justify-between mt-4 text-sm text-slate-500">
+        <div className="flex items-center justify-between mt-4 text-sm text-slate-500 dark:text-slate-400">
           <span>
             Showing {skip + 1}–{Math.min(skip + restaurants.length, total)} of {total}
           </span>
@@ -151,7 +155,7 @@ export default async function RestaurantsPage({
             {page > 1 && (
               <Link
                 href={`/restaurants?page=${page - 1}${stage ? `&stage=${stage}` : ""}${q ? `&q=${q}` : ""}`}
-                className="px-3 py-1.5 rounded border bg-white hover:bg-slate-50"
+                className="px-3 py-1.5 rounded border bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 Previous
               </Link>
@@ -159,7 +163,7 @@ export default async function RestaurantsPage({
             {skip + restaurants.length < total && (
               <Link
                 href={`/restaurants?page=${page + 1}${stage ? `&stage=${stage}` : ""}${q ? `&q=${q}` : ""}`}
-                className="px-3 py-1.5 rounded border bg-white hover:bg-slate-50"
+                className="px-3 py-1.5 rounded border bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 Next
               </Link>

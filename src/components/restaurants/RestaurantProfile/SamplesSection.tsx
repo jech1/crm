@@ -108,10 +108,10 @@ export function SamplesSection({ restaurantId, samples, canLog }: SamplesSection
   if (samples.length === 0 && !canLog) return null
 
   return (
-    <div className="rounded-xl border bg-white p-5">
+    <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-          <FlaskConical className="h-4 w-4 text-slate-400" />
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <FlaskConical className="h-4 w-4 text-slate-400 dark:text-slate-500" />
           Samples ({samples.length})
         </h2>
         {canLog && (
@@ -234,7 +234,7 @@ export function SamplesSection({ restaurantId, samples, canLog }: SamplesSection
                           (val === "no" && ledToInterest === false) ||
                           (val === "unknown" && ledToInterest === null)
                             ? "bg-slate-800 text-white border-slate-800"
-                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
                         }`}
                       >
                         {val === "yes" ? "Yes" : val === "no" ? "No" : "Unknown"}
@@ -263,17 +263,17 @@ export function SamplesSection({ restaurantId, samples, canLog }: SamplesSection
       </div>
 
       {samples.length === 0 ? (
-        <p className="text-sm text-slate-400 text-center py-3">
+        <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-3">
           {canLog ? "No samples logged yet. Log one above." : "No samples logged yet."}
         </p>
       ) : (
-        <ul className="space-y-3 divide-y">
+        <ul className="space-y-3 divide-y dark:divide-slate-700">
           {samples.map((s) => (
             <li key={s.id} className="text-sm pt-3 first:pt-0">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-medium text-slate-900">{s.product}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="font-medium text-slate-900 dark:text-white">{s.product}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {formatDate(s.sampleDate)}
                     {s.quantity ? ` · ${s.quantity}` : ""}
                     {s.receivedBy ? ` · Received by ${s.receivedBy}` : ""}
@@ -286,9 +286,9 @@ export function SamplesSection({ restaurantId, samples, canLog }: SamplesSection
                   </span>
                 )}
               </div>
-              {s.notes && <p className="text-xs text-slate-400 mt-0.5 italic">{s.notes}</p>}
+              {s.notes && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 italic">{s.notes}</p>}
               {s.followUpResult && (
-                <p className="text-xs text-slate-600 mt-1 bg-slate-50 rounded px-1.5 py-1">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 bg-slate-50 dark:bg-slate-700/50 rounded px-1.5 py-1">
                   {s.followUpResult}
                 </p>
               )}

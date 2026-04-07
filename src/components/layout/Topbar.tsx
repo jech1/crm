@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 
 export function Topbar() {
   return (
-    <header className="h-14 border-b bg-white flex items-center px-6 gap-4">
+    <header className="h-14 border-b bg-white dark:bg-slate-900 dark:border-slate-700 flex items-center px-6 gap-4">
       <div className="flex-1 max-w-sm relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input

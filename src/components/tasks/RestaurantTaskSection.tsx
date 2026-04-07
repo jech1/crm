@@ -91,13 +91,13 @@ export function RestaurantTaskSection({
         restaurantName={restaurantName}
       />
 
-      <div className="rounded-xl border bg-white p-5">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-slate-400" />
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-slate-400 dark:text-slate-500" />
             Tasks
             {open.length > 0 && (
-              <span className="text-xs font-normal text-slate-400">
+              <span className="text-xs font-normal text-slate-400 dark:text-slate-500">
                 ({open.length} open{completed.length > 0 ? `, ${completed.length} done` : ""})
               </span>
             )}
@@ -105,7 +105,7 @@ export function RestaurantTaskSection({
           {canLog && (
             <button
               onClick={() => setCreateOpen(true)}
-              className="flex items-center gap-1 text-xs font-medium text-green-700 hover:text-green-800 border border-green-200 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-md transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 px-2 py-1 rounded-md transition-colors"
             >
               <Plus className="h-3 w-3" />
               Add Task
@@ -114,11 +114,11 @@ export function RestaurantTaskSection({
         </div>
 
         {tasks.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-4">
+          <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">
             No tasks yet. Add one to start tracking follow-ups.
           </p>
         ) : (
-          <div className="space-y-0 divide-y">
+          <div className="space-y-0 divide-y dark:divide-slate-700">
             {/* Open tasks */}
             {open.map((task) => {
               const isOverdue =
@@ -129,14 +129,14 @@ export function RestaurantTaskSection({
                   <button
                     type="button"
                     onClick={() => setCompleteTask(task)}
-                    className="mt-0.5 shrink-0 text-slate-300 hover:text-green-500 transition-colors"
+                    className="mt-0.5 shrink-0 text-slate-300 dark:text-slate-600 hover:text-green-500 transition-colors"
                     title="Mark complete"
                   >
                     <Circle className="h-4 w-4" />
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm text-slate-800">{task.title}</p>
+                      <p className="text-sm text-slate-800 dark:text-slate-200">{task.title}</p>
                       <span
                         className={cn(
                           "text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0",
@@ -147,7 +147,7 @@ export function RestaurantTaskSection({
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="text-[10px] text-slate-400">{TASK_TYPE_LABELS[task.taskType]}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">{TASK_TYPE_LABELS[task.taskType]}</span>
                       {task.dueDate && (
                         <span
                           className={cn(
@@ -162,10 +162,10 @@ export function RestaurantTaskSection({
                           {formatDueDate(task.dueDate)}
                         </span>
                       )}
-                      <span className="text-[10px] text-slate-300">· {task.assignedTo.name}</span>
+                      <span className="text-[10px] text-slate-300 dark:text-slate-600">· {task.assignedTo.name}</span>
                     </div>
                     {task.notes && (
-                      <p className="text-[11px] text-slate-400 mt-0.5 italic">{task.notes}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 italic">{task.notes}</p>
                     )}
                   </div>
                 </div>
@@ -178,8 +178,8 @@ export function RestaurantTaskSection({
                 <CheckCircle2 className="h-4 w-4 text-green-400 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm text-slate-400 line-through">{task.title}</p>
-                    <span className="text-[10px] text-slate-300 shrink-0">
+                    <p className="text-sm text-slate-400 dark:text-slate-500 line-through">{task.title}</p>
+                    <span className="text-[10px] text-slate-300 dark:text-slate-600 shrink-0">
                       {task.completedAt ? formatDate(task.completedAt) : ""}
                     </span>
                   </div>
@@ -198,7 +198,7 @@ export function RestaurantTaskSection({
                     <span className="text-[10px] text-slate-300">· {task.assignedTo.name}</span>
                   </div>
                   {task.completionNotes && (
-                    <p className="text-[11px] text-slate-500 mt-0.5 bg-slate-50 rounded px-1.5 py-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 bg-slate-50 dark:bg-slate-700/50 rounded px-1.5 py-0.5">
                       {task.completionNotes}
                     </p>
                   )}

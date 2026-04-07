@@ -14,7 +14,8 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(node:*)",
-      "Bash(kill 53533)"
+      "Bash(kill 53533)",
+      "Bash(grep:*)"
     ]
   }
 }

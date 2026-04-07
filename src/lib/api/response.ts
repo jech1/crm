@@ -32,6 +32,10 @@ export const ApiResponse = {
     return NextResponse.json({ error: message }, { status: 403 })
   },
 
+  conflict<T extends object>(data: T) {
+    return NextResponse.json(data, { status: 409 })
+  },
+
   validationError(error: ZodError) {
     return NextResponse.json(
       { error: "Validation failed", issues: error.flatten().fieldErrors },

@@ -15,6 +15,7 @@ import { db } from "@/lib/db"
 import { createRestaurantSchema } from "@/lib/validations/restaurant"
 import { logActivity } from "@/lib/services/activity.service"
 import { matchTerritory } from "@/lib/territories/autoAssign"
+import { checkNameCityDuplicate } from "@/lib/restaurants/deduplicate"
 import type { Prisma, PipelineStage } from "@prisma/client"
 
 export async function GET(req: NextRequest) {
@@ -89,7 +90,25 @@ export async function POST(req: NextRequest) {
     const parsed = createRestaurantSchema.safeParse(body)
     if (!parsed.success) return ApiResponse.validationError(parsed.error)
 
-    const data = parsed.data
+    const { skipDuplicateCheck, ...data } = parsed.data
+
+    // Duplicate guard — same name + same address + city + zip = true duplicate.
+    // Allows same-name restaurants at different addresses (chains, multi-location).
+    // Skipped when the rep has already seen the warning and confirmed intent.
+    if (!skipDuplicateCheck) {
+      const existingId = await checkNameCityDuplicate(
+        data.name,
+        data.city,
+        data.zip,
+        data.address,
+      )
+      if (existingId) {
+        return ApiResponse.conflict({
+          error: "A restaurant at this address already exists in the CRM.",
+          existingId,
+        })
+      }
+    }
 
     // Ownership rules:
     // - REP: always owns the restaurant they create (repId = themselves, ignore any passed repId)

@@ -116,17 +116,17 @@ export default async function RestaurantDetailPage({ params }: Props) {
 
           {/* Stage history */}
           {restaurant.stageHistory.length > 0 && (
-            <div className="rounded-xl border bg-white p-5">
-              <h2 className="text-sm font-semibold text-slate-900 mb-4">Stage History</h2>
+            <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Stage History</h2>
               <ul className="space-y-2">
                 {restaurant.stageHistory.map((h) => (
                   <li key={h.id} className="flex items-center gap-3 text-sm">
-                    <span className="text-xs text-slate-400 w-28 shrink-0">{formatDate(h.changedAt)}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 w-28 shrink-0">{formatDate(h.changedAt)}</span>
                     <div className="flex items-center gap-2">
                       {h.fromStage && (
                         <>
                           <StageBadge stage={h.fromStage} />
-                          <span className="text-slate-400">→</span>
+                          <span className="text-slate-400 dark:text-slate-500">→</span>
                         </>
                       )}
                       <StageBadge stage={h.toStage} />
@@ -139,13 +139,13 @@ export default async function RestaurantDetailPage({ params }: Props) {
 
           {/* Activity timeline */}
           {restaurant.activities.length > 0 && (
-            <div className="rounded-xl border bg-white p-5">
-              <h2 className="text-sm font-semibold text-slate-900 mb-4">Activity</h2>
+            <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Activity</h2>
               <ul className="space-y-3">
                 {restaurant.activities.map((a) => (
                   <li key={a.id} className="flex items-start gap-3 text-sm">
-                    <span className="text-xs text-slate-400 shrink-0 w-24">{formatRelativeTime(a.createdAt)}</span>
-                    <p className="text-slate-600">{a.description}</p>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0 w-24">{formatRelativeTime(a.createdAt)}</span>
+                    <p className="text-slate-600 dark:text-slate-400">{a.description}</p>
                   </li>
                 ))}
               </ul>
@@ -204,48 +204,48 @@ export default async function RestaurantDetailPage({ params }: Props) {
             restaurant.creditAppSent ||
             restaurant.additionalNotes ||
             restaurant.followUpNotes) && (
-            <div className="rounded-xl border bg-white p-5">
-              <h2 className="text-sm font-semibold text-slate-900 mb-3">Account Details</h2>
+            <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Account Details</h2>
               <dl className="space-y-2 text-sm">
                 {restaurant.deliveriesPerWeek != null && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Deliveries/week</dt>
-                    <dd className="text-slate-800">{restaurant.deliveriesPerWeek}</dd>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Deliveries/week</dt>
+                    <dd className="text-slate-800 dark:text-slate-200">{restaurant.deliveriesPerWeek}</dd>
                   </div>
                 )}
                 {restaurant.desiredDeliveryTime && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Preferred time</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Preferred time</dt>
                     <dd className="text-slate-800">{restaurant.desiredDeliveryTime}</dd>
                   </div>
                 )}
                 {restaurant.deliveryLocation && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Delivery location</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Delivery location</dt>
                     <dd className="text-slate-800">{restaurant.deliveryLocation}</dd>
                   </div>
                 )}
                 {restaurant.paymentMethod && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Payment</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Payment</dt>
                     <dd className="text-slate-800">{restaurant.paymentMethod}</dd>
                   </div>
                 )}
                 {restaurant.billingTerms && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Billing terms</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Billing terms</dt>
                     <dd className="text-slate-800">{restaurant.billingTerms}</dd>
                   </div>
                 )}
                 {restaurant.yearsInBusiness != null && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Years in business</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Years in business</dt>
                     <dd className="text-slate-800">{restaurant.yearsInBusiness}</dd>
                   </div>
                 )}
                 {restaurant.isReferral && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Referral</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Referral</dt>
                     <dd className="text-slate-800">
                       {restaurant.referredBy ? `Via ${restaurant.referredBy}` : "Yes"}
                     </dd>
@@ -253,20 +253,20 @@ export default async function RestaurantDetailPage({ params }: Props) {
                 )}
                 {restaurant.creditAppSent && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Credit app</dt>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Credit app</dt>
                     <dd className="text-slate-800 text-green-700 font-medium">Sent</dd>
                   </div>
                 )}
                 {restaurant.additionalNotes && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Notes</dt>
-                    <dd className="text-slate-800 whitespace-pre-line">{restaurant.additionalNotes}</dd>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Notes</dt>
+                    <dd className="text-slate-800 dark:text-slate-200 whitespace-pre-line">{restaurant.additionalNotes}</dd>
                   </div>
                 )}
                 {restaurant.followUpNotes && (
                   <div className="flex gap-2">
-                    <dt className="text-slate-500 shrink-0 w-36">Follow-up notes</dt>
-                    <dd className="text-slate-800 whitespace-pre-line">{restaurant.followUpNotes}</dd>
+                    <dt className="text-slate-500 dark:text-slate-400 shrink-0 w-36">Follow-up notes</dt>
+                    <dd className="text-slate-800 dark:text-slate-200 whitespace-pre-line">{restaurant.followUpNotes}</dd>
                   </div>
                 )}
               </dl>
@@ -275,8 +275,8 @@ export default async function RestaurantDetailPage({ params }: Props) {
 
           {/* Product interests */}
           {restaurant.productInterests.length > 0 && (
-            <div className="rounded-xl border bg-white p-5">
-              <h2 className="text-sm font-semibold text-slate-900 mb-3">Product Interests</h2>
+            <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Product Interests</h2>
               <div className="flex flex-wrap gap-1.5">
                 {restaurant.productInterests.map((pi) => (
                   <span key={pi.id} className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded-md font-medium">
@@ -289,23 +289,23 @@ export default async function RestaurantDetailPage({ params }: Props) {
 
           {/* Competitor note */}
           {restaurant.competitorNote && (
-            <div className="rounded-xl border bg-white p-5">
-              <h2 className="text-sm font-semibold text-slate-900 mb-3">Competitor Intel</h2>
+            <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Competitor Intel</h2>
               <div className="space-y-2 text-sm">
                 {restaurant.competitorNote.currentSupplier && (
-                  <p className="text-slate-600">
+                  <p className="text-slate-600 dark:text-slate-400">
                     <span className="font-medium text-slate-700">Current supplier: </span>
                     {restaurant.competitorNote.currentSupplier}
                   </p>
                 )}
                 {restaurant.competitorNote.complaints && (
-                  <p className="text-slate-600">
+                  <p className="text-slate-600 dark:text-slate-400">
                     <span className="font-medium text-slate-700">Complaints: </span>
                     {restaurant.competitorNote.complaints}
                   </p>
                 )}
                 {restaurant.competitorNote.whyMightSwitch && (
-                  <p className="text-slate-600">
+                  <p className="text-slate-600 dark:text-slate-400">
                     <span className="font-medium text-slate-700">Why switch: </span>
                     {restaurant.competitorNote.whyMightSwitch}
                   </p>

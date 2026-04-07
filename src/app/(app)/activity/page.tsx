@@ -99,7 +99,7 @@ export default async function ActivityPage() {
       />
 
       {activities.length === 0 ? (
-        <div className="rounded-xl border bg-white p-12">
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-12">
           <EmptyState
             icon={Activity}
             title="No activity yet"
@@ -113,18 +113,18 @@ export default async function ActivityPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
                 {dateLabel}
               </h2>
-              <div className="rounded-xl border bg-white divide-y">
+              <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 divide-y dark:divide-slate-700">
                 {items.map((activity) => (
                   <div key={activity.id} className="flex items-start gap-3 px-5 py-3.5">
                     {/* Avatar */}
-                    <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-green-700">
+                    <div className="w-7 h-7 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-green-700 dark:text-green-400">
                       {initials(activity.user.name)}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm text-slate-700">
-                          <span className="font-medium text-slate-900">{activity.user.name}</span>
+                        <p className="text-sm text-slate-700 dark:text-slate-300">
+                          <span className="font-medium text-slate-900 dark:text-white">{activity.user.name}</span>
                           {" "}
                           {ACTIVITY_LABELS[activity.action] ??
                             activity.action.toLowerCase().replace(/_/g, " ")}
@@ -140,20 +140,20 @@ export default async function ActivityPage() {
                             </>
                           )}
                         </p>
-                        <span className="text-xs text-slate-400 shrink-0 whitespace-nowrap">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0 whitespace-nowrap">
                           {formatRelativeTime(activity.createdAt)}
                         </span>
                       </div>
 
                       {activity.description && (
-                        <p className="text-xs text-slate-500 mt-0.5">{activity.description}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{activity.description}</p>
                       )}
 
                       {/* Action type badge */}
                       <span
                         className={cn(
                           "inline-block text-[10px] font-medium px-1.5 py-0.5 rounded mt-1.5",
-                          ACTIVITY_COLORS[activity.action] ?? "bg-slate-100 text-slate-500",
+                          ACTIVITY_COLORS[activity.action] ?? "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400",
                         )}
                       >
                         {activity.action.replace(/_/g, " ").toLowerCase()}

@@ -29,6 +29,7 @@ import type { PipelineStage } from "@prisma/client"
 interface SearchRestaurant {
   id: string
   name: string
+  address: string
   city: string
   state: string
   pipelineStage: PipelineStage
@@ -78,7 +79,7 @@ function buildItems(results: SearchResults): ResultItem[] {
       key: `restaurant-${r.id}`,
       href: `/restaurants/${r.id}`,
       label: r.name,
-      sublabel: `${r.city}, ${r.state}${r.rep ? ` · ${r.rep.name}` : ""}`,
+      sublabel: `${r.address}, ${r.city}, ${r.state}${r.rep ? ` · ${r.rep.name}` : ""}`,
       icon: <Store className="h-3.5 w-3.5 shrink-0 text-slate-400" />,
       badge: <StageBadge stage={r.pipelineStage} />,
     })

@@ -282,30 +282,30 @@ export default async function ReportsPage() {
           <div
             key={kpi.label}
             className={cn(
-              "rounded-xl border bg-white p-5",
-              kpi.urgent && "border-red-200 bg-red-50",
+              "rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5",
+              kpi.urgent && "border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800",
             )}
           >
-            <p className="text-xs text-slate-500">{kpi.label}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{kpi.label}</p>
             <p className={cn("text-3xl font-bold mt-1", kpi.color)}>{kpi.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{kpi.sub}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{kpi.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Pipeline breakdown */}
-      <div className="rounded-xl border bg-white p-5 mb-6">
-        <h2 className="text-sm font-semibold text-slate-800 mb-4">Pipeline Breakdown</h2>
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5 mb-6">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-white mb-4">Pipeline Breakdown</h2>
         <div className="space-y-2.5">
           {PIPELINE_STAGES_ORDERED.map((stage) => {
             const count = stageMap[stage] ?? 0
             const pct = Math.round((count / maxStageCount) * 100)
             return (
               <div key={stage} className="flex items-center gap-3">
-                <span className="text-xs text-slate-500 w-40 shrink-0">
+                <span className="text-xs text-slate-500 dark:text-slate-400 w-40 shrink-0">
                   {PIPELINE_STAGE_LABELS[stage]}
                 </span>
-                <div className="flex-1 h-5 bg-slate-100 rounded overflow-hidden">
+                <div className="flex-1 h-5 bg-slate-100 dark:bg-slate-700 rounded overflow-hidden">
                   {count > 0 && (
                     <div
                       className={cn("h-full rounded transition-all", STAGE_BAR_COLORS[stage])}
@@ -313,7 +313,7 @@ export default async function ReportsPage() {
                     />
                   )}
                 </div>
-                <span className="text-xs font-semibold text-slate-700 w-6 text-right shrink-0">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 w-6 text-right shrink-0">
                   {count}
                 </span>
               </div>
@@ -324,40 +324,40 @@ export default async function ReportsPage() {
 
       {/* Win / Loss + Warm Leads */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="rounded-xl border bg-white p-5">
-          <p className="text-xs text-slate-500">Won This Month</p>
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Won This Month</p>
           <p className="text-3xl font-bold text-green-600 mt-1">{wonThisMonth}</p>
-          <p className="text-xs text-slate-400 mt-0.5">New customers converted</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">New customers converted</p>
         </div>
-        <div className="rounded-xl border bg-white p-5">
-          <p className="text-xs text-slate-500">Lost This Month</p>
-          <p className="text-3xl font-bold text-slate-400 mt-1">{lostThisMonth}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Leads marked lost</p>
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Lost This Month</p>
+          <p className="text-3xl font-bold text-slate-400 dark:text-slate-500 mt-1">{lostThisMonth}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Leads marked lost</p>
         </div>
-        <div className="rounded-xl border bg-white p-5">
-          <p className="text-xs text-slate-500">Active Warm Leads</p>
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Active Warm Leads</p>
           <p className="text-3xl font-bold text-pink-600 mt-1">{activeWarmLeads}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Open introductions</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Open introductions</p>
         </div>
       </div>
 
       {/* Loss reason breakdown — admin only */}
       {user.role === "ADMIN" && lossReasonBreakdown.length > 0 && (
-        <div className="rounded-xl border bg-white p-5 mb-6">
-          <h2 className="text-sm font-semibold text-slate-800 mb-4">Why We Lose Deals</h2>
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5 mb-6">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-white mb-4">Why We Lose Deals</h2>
           <div className="space-y-2.5">
             {(() => {
               const maxCount = Math.max(...lossReasonBreakdown.map((r) => r.count), 1)
               return lossReasonBreakdown.map((r) => (
                 <div key={r.reason} className="flex items-center gap-3">
-                  <span className="text-xs text-slate-500 w-44 shrink-0">{r.reason}</span>
-                  <div className="flex-1 h-5 bg-slate-100 rounded overflow-hidden">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 w-44 shrink-0">{r.reason}</span>
+                  <div className="flex-1 h-5 bg-slate-100 dark:bg-slate-700 rounded overflow-hidden">
                     <div
-                      className="h-full bg-red-300 rounded transition-all"
+                      className="h-full bg-red-300 dark:bg-red-500/60 rounded transition-all"
                       style={{ width: `${Math.max(Math.round((r.count / maxCount) * 100), 4)}%` }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-slate-700 w-6 text-right shrink-0">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 w-6 text-right shrink-0">
                     {r.count}
                   </span>
                 </div>
@@ -368,12 +368,12 @@ export default async function ReportsPage() {
       )}
 
       {/* Visit volume sparkline */}
-      <div className="rounded-xl border bg-white p-5">
+      <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">Visit Volume — Last 8 Weeks</h2>
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-white">Visit Volume — Last 8 Weeks</h2>
           </div>
-          <span className="text-xs text-slate-400">{visitsThisWeek} this week</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">{visitsThisWeek} this week</span>
         </div>
         <div className="flex items-end gap-2 h-28">
           {weeklyVisitCounts.map((count, i) => {
@@ -382,11 +382,11 @@ export default async function ReportsPage() {
             const isCurrentWeek = i === 7
             return (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[9px] text-slate-400 font-medium">{count as number}</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">{count as number}</span>
                 <div
                   className={cn(
                     "w-full rounded-t",
-                    isCurrentWeek ? "bg-green-500" : "bg-slate-200",
+                    isCurrentWeek ? "bg-green-500" : "bg-slate-200 dark:bg-slate-600",
                   )}
                   style={{ height: `${heightPct}%` }}
                   title={`${weekLabels[i]}: ${count} visits`}
@@ -401,7 +401,7 @@ export default async function ReportsPage() {
               key={i}
               className={cn(
                 "text-[9px]",
-                i === 7 ? "text-green-600 font-semibold" : "text-slate-400",
+                i === 7 ? "text-green-600 dark:text-green-400 font-semibold" : "text-slate-400 dark:text-slate-500",
               )}
               style={{ width: "12.5%", textAlign: "center" }}
             >
@@ -412,68 +412,68 @@ export default async function ReportsPage() {
       </div>
       {/* Rep performance table — admin only */}
       {user.role === "ADMIN" && repPerformanceRows.length > 0 && (
-        <div className="rounded-xl border bg-white p-5 mt-6">
-          <h2 className="text-sm font-semibold text-slate-800 mb-1">Team Performance</h2>
-          <p className="text-xs text-slate-400 mb-4">Current month · Active sales team members</p>
+        <div className="rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 p-5 mt-6">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-white mb-1">Team Performance</h2>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">Current month · Active sales team members</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left text-xs font-medium text-slate-500 pb-2 pr-4">Rep</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 px-3">Accounts</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 px-3">Visits</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 px-3">Meetings</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 px-3">Tasks Done</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 px-3 text-green-600">Wins</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 px-3">Losses</th>
-                  <th className="text-right text-xs font-medium text-slate-500 pb-2 pl-3 text-red-500">Overdue</th>
+                <tr className="border-b dark:border-slate-700">
+                  <th className="text-left text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 pr-4">Rep</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 px-3">Accounts</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 px-3">Visits</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 px-3">Meetings</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 px-3">Tasks Done</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 px-3 text-green-600">Wins</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 px-3">Losses</th>
+                  <th className="text-right text-xs font-medium text-slate-500 dark:text-slate-400 pb-2 pl-3 text-red-500">Overdue</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y dark:divide-slate-700">
                 {repPerformanceRows
                   .sort((a, b) => b.visitsThisMonth - a.visitsThisMonth)
                   .map((rep) => (
-                    <tr key={rep.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={rep.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                            <span className="text-xs font-semibold text-green-700">
+                          <div className="w-7 h-7 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-semibold text-green-700 dark:text-green-400">
                               {initials(rep.name)}
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-slate-900 text-sm">{rep.name}</p>
-                            <p className="text-[10px] text-slate-400">{rep.email}</p>
+                            <p className="font-medium text-slate-900 dark:text-white text-sm">{rep.name}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500">{rep.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-700">{rep.restaurants}</td>
+                      <td className="py-3 px-3 text-right text-slate-700 dark:text-slate-300">{rep.restaurants}</td>
                       <td className="py-3 px-3 text-right">
                         <span className={cn(
                           "font-semibold",
-                          rep.visitsThisMonth >= 10 ? "text-green-600" :
-                          rep.visitsThisMonth >= 5 ? "text-slate-700" :
-                          rep.visitsThisMonth === 0 ? "text-slate-300" : "text-slate-700"
+                          rep.visitsThisMonth >= 10 ? "text-green-600 dark:text-green-400" :
+                          rep.visitsThisMonth >= 5 ? "text-slate-700 dark:text-slate-300" :
+                          rep.visitsThisMonth === 0 ? "text-slate-300 dark:text-slate-600" : "text-slate-700 dark:text-slate-300"
                         )}>
                           {rep.visitsThisMonth}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-700">{rep.meetingsCompleted}</td>
-                      <td className="py-3 px-3 text-right text-slate-700">{rep.tasksCompleted}</td>
+                      <td className="py-3 px-3 text-right text-slate-700 dark:text-slate-300">{rep.meetingsCompleted}</td>
+                      <td className="py-3 px-3 text-right text-slate-700 dark:text-slate-300">{rep.tasksCompleted}</td>
                       <td className="py-3 px-3 text-right">
                         <span className={cn(
                           "font-semibold",
-                          rep.wins > 0 ? "text-green-600" : "text-slate-300"
+                          rep.wins > 0 ? "text-green-600 dark:text-green-400" : "text-slate-300 dark:text-slate-600"
                         )}>
                           {rep.wins}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-700">{rep.losses}</td>
+                      <td className="py-3 px-3 text-right text-slate-700 dark:text-slate-300">{rep.losses}</td>
                       <td className="py-3 pl-3 text-right">
                         <span className={cn(
                           "font-semibold",
-                          rep.overdueTasks > 5 ? "text-red-600" :
-                          rep.overdueTasks > 0 ? "text-orange-500" : "text-slate-300"
+                          rep.overdueTasks > 5 ? "text-red-600 dark:text-red-400" :
+                          rep.overdueTasks > 0 ? "text-orange-500 dark:text-orange-400" : "text-slate-300 dark:text-slate-600"
                         )}>
                           {rep.overdueTasks}
                         </span>
@@ -484,7 +484,7 @@ export default async function ReportsPage() {
             </table>
           </div>
           {repPerformanceRows.length === 0 && (
-            <p className="text-sm text-slate-400 text-center py-6">No active team members found.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">No active team members found.</p>
           )}
         </div>
       )}
