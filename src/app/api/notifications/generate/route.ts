@@ -14,14 +14,23 @@
 
 import { getAuthContext } from "@/lib/auth"
 import { ApiResponse } from "@/lib/api/response"
+import { rateLimit } from "@/lib/rateLimit"
 import { db } from "@/lib/db"
 import { addHours, subHours } from "date-fns"
 import { sendEmail } from "@/lib/email"
 import { overdueTaskDigestTemplate } from "@/lib/email/templates"
 
+// Client polls every 60 s. Allow 3/min so multiple tabs don't hit the wall,
+// but scripted rapid-fire calls (which trigger email sends) are still capped.
+const GENERATE_LIMIT = 3
+const GENERATE_WINDOW_MS = 60_000
+
 export async function POST() {
   return ApiResponse.handle(async () => {
     const { user } = await getAuthContext()
+
+    const rl = rateLimit(`${user.id}:notify-generate`, GENERATE_LIMIT, GENERATE_WINDOW_MS)
+    if (rl.limited) return ApiResponse.tooManyRequests(rl.retryAfterSecs)
 
     // Connectors have no owned tasks or meetings — just return count
     if (user.role === "CONNECTOR") {

@@ -18,6 +18,7 @@
 import { type NextRequest } from "next/server"
 import { getAuthContext, can } from "@/lib/auth"
 import { ApiResponse } from "@/lib/api/response"
+import { rateLimit } from "@/lib/rateLimit"
 import { searchRestaurantsByArea } from "@/lib/services/google-places"
 import { checkForDuplicates } from "@/lib/restaurants/deduplicate"
 import { z } from "zod"
@@ -30,6 +31,10 @@ const searchSchema = z.object({
   pageToken: z.string().optional(),
 })
 
+// 10 searches per minute per user — protects Google Places API quota
+const SEARCH_LIMIT = 10
+const SEARCH_WINDOW_MS = 60_000
+
 export async function POST(req: NextRequest) {
   return ApiResponse.handle(async () => {
     const { user } = await getAuthContext()
@@ -37,6 +42,9 @@ export async function POST(req: NextRequest) {
     if (!can.createRestaurant(user.role)) {
       return ApiResponse.forbidden("Only admins and reps can search for restaurants.")
     }
+
+    const rl = rateLimit(`${user.id}:search`, SEARCH_LIMIT, SEARCH_WINDOW_MS)
+    if (rl.limited) return ApiResponse.tooManyRequests(rl.retryAfterSecs)
 
     const body = await req.json()
     const parsed = searchSchema.safeParse(body)

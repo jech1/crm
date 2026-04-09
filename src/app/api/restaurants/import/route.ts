@@ -19,6 +19,7 @@
 import { type NextRequest } from "next/server"
 import { getAuthContext, can } from "@/lib/auth"
 import { ApiResponse } from "@/lib/api/response"
+import { rateLimit } from "@/lib/rateLimit"
 import { db } from "@/lib/db"
 import { logActivity } from "@/lib/services/activity.service"
 import { checkNameCityDuplicate } from "@/lib/restaurants/deduplicate"
@@ -67,6 +68,10 @@ const importSchema = z.object({
 // Route handler
 // ─────────────────────────────────────────────────────────────
 
+// 5 import batches per hour — each batch can create up to 50 records
+const IMPORT_LIMIT = 5
+const IMPORT_WINDOW_MS = 60 * 60_000
+
 export async function POST(req: NextRequest) {
   return ApiResponse.handle(async () => {
     const { user } = await getAuthContext()
@@ -74,6 +79,9 @@ export async function POST(req: NextRequest) {
     if (!can.createRestaurant(user.role)) {
       return ApiResponse.forbidden("Only admins and reps can import restaurants.")
     }
+
+    const rl = rateLimit(`${user.id}:import`, IMPORT_LIMIT, IMPORT_WINDOW_MS)
+    if (rl.limited) return ApiResponse.tooManyRequests(rl.retryAfterSecs)
 
     const body = await req.json()
     const parsed = importSchema.safeParse(body)

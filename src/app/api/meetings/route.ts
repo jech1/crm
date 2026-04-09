@@ -8,6 +8,7 @@
 import { type NextRequest } from "next/server"
 import { getAuthContext, getRestaurantAccess } from "@/lib/auth"
 import { ApiResponse } from "@/lib/api/response"
+import { rateLimit } from "@/lib/rateLimit"
 import { db } from "@/lib/db"
 import { createMeetingSchema } from "@/lib/validations/meeting"
 import { formatDateTime } from "@/lib/utils"
@@ -56,9 +57,16 @@ export async function GET(req: NextRequest) {
   })
 }
 
+// 20 meeting creations per 10 minutes — prevents admin notification spam
+const MEETING_LIMIT = 20
+const MEETING_WINDOW_MS = 10 * 60_000
+
 export async function POST(req: NextRequest) {
   return ApiResponse.handle(async () => {
     const { user } = await getAuthContext()
+
+    const rl = rateLimit(`${user.id}:meetings-create`, MEETING_LIMIT, MEETING_WINDOW_MS)
+    if (rl.limited) return ApiResponse.tooManyRequests(rl.retryAfterSecs)
 
     const body = await req.json()
     const parsed = createMeetingSchema.safeParse(body)

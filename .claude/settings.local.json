@@ -16,7 +16,9 @@
       "Bash(node:*)",
       "Bash(kill 53533)",
       "Bash(grep:*)",
-      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data[0]['text']\\)\")"
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data[0]['text']\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); deps={**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}; print\\('\\\\n'.join\\(k for k in sorted\\(deps\\)\\)\\)\")",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

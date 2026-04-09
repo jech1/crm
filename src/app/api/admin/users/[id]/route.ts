@@ -20,7 +20,8 @@ type RouteContext = { params: Promise<{ id: string }> }
 
 const patchSchema = z.object({
   status: z.enum(["PENDING", "ACTIVE", "DISABLED"]).optional(),
-  role: z.enum(["ADMIN", "SALES_REP", "CONNECTOR"]).optional(),
+  // CONNECTOR is not in launch scope — only ADMIN and SALES_REP are assignable
+  role: z.enum(["ADMIN", "SALES_REP"]).optional(),
 })
 
 export async function PATCH(req: NextRequest, { params }: RouteContext) {

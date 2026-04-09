@@ -36,6 +36,13 @@ export const ApiResponse = {
     return NextResponse.json(data, { status: 409 })
   },
 
+  tooManyRequests(retryAfterSecs = 60) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down and try again." },
+      { status: 429, headers: { "Retry-After": String(retryAfterSecs) } },
+    )
+  },
+
   validationError(error: ZodError) {
     return NextResponse.json(
       { error: "Validation failed", issues: error.flatten().fieldErrors },
