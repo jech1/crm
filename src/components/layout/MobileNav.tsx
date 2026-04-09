@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import { NAV_ITEMS, ADMIN_NAV_ITEMS } from "@/lib/constants"
 import { useClerk } from "@clerk/nextjs"
 import { GlobalSearch } from "./GlobalSearch"
+import { useLogoNavigation } from "@/hooks/useLogoNavigation"
 import type { Role } from "@prisma/client"
 
 interface MobileNavProps {
@@ -37,6 +38,8 @@ export function MobileNav({ userRole, userName, userEmail }: MobileNavProps) {
   const [open, setOpen] = useState(false)
   const [dark, setDark] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+
+  const { handleLogoClick } = useLogoNavigation()
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
@@ -117,8 +120,13 @@ export function MobileNav({ userRole, userName, userEmail }: MobileNavProps) {
     <>
       {/* ── Top bar ──────────────────────────────────────────────────── */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900 md:hidden">
-        {/* Logo */}
-        <div className="flex items-center gap-2" aria-label="Produce CRM" role="img">
+        {/* Logo — navigates to dashboard */}
+        <Link
+          href="/dashboard"
+          onClick={handleLogoClick}
+          aria-label="Produce CRM — go to dashboard"
+          className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+        >
           <div
             className="flex h-7 w-7 items-center justify-center rounded-md bg-green-600"
             aria-hidden="true"
@@ -126,7 +134,7 @@ export function MobileNav({ userRole, userName, userEmail }: MobileNavProps) {
             <span className="text-xs font-bold text-white">P</span>
           </div>
           <span className="text-sm font-semibold text-slate-900 dark:text-white">Produce CRM</span>
-        </div>
+        </Link>
 
         {/* Right: search + notifications + hamburger */}
         <div className="flex items-center gap-0.5">
@@ -205,12 +213,17 @@ export function MobileNav({ userRole, userName, userEmail }: MobileNavProps) {
       >
         {/* Drawer header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 px-4 dark:border-slate-700">
-          <div className="flex items-center gap-2.5" aria-hidden="true">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-green-600">
+          <Link
+            href="/dashboard"
+            onClick={handleLogoClick}
+            aria-label="Produce CRM — go to dashboard"
+            className="flex items-center gap-2.5 rounded-md px-1 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-green-600" aria-hidden="true">
               <span className="text-xs font-bold text-white">P</span>
             </div>
             <span className="text-sm font-semibold text-slate-900 dark:text-white">Produce CRM</span>
-          </div>
+          </Link>
           <button
             ref={closeRef}
             onClick={closeDrawer}

@@ -8,6 +8,7 @@ import { NAV_ITEMS, ADMIN_NAV_ITEMS } from "@/lib/constants"
 import { ChevronLeft, ChevronRight, Moon, Sun, LogOut, Bell, Search } from "lucide-react"
 import { useClerk } from "@clerk/nextjs"
 import { GlobalSearch } from "./GlobalSearch"
+import { useLogoNavigation } from "@/hooks/useLogoNavigation"
 import type { Role } from "@prisma/client"
 
 interface CollapsibleSidebarProps {
@@ -74,6 +75,8 @@ export function CollapsibleSidebar({ userRole, userName, userEmail }: Collapsibl
     .toUpperCase()
     .slice(0, 2)
 
+  const { handleLogoClick } = useLogoNavigation()
+
   const notificationsLinkClass = (active: boolean) =>
     cn(
       "relative flex items-center rounded-md text-sm transition-colors",
@@ -106,10 +109,15 @@ export function CollapsibleSidebar({ userRole, userName, userEmail }: Collapsibl
         {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
       </button>
 
-      {/* Logo */}
-      <div
+      {/* Logo — navigates to dashboard */}
+      <Link
+        href="/dashboard"
+        onClick={handleLogoClick}
+        aria-label="Produce CRM — go to dashboard"
+        title="Dashboard"
         className={cn(
           "flex items-center h-14 border-b border-slate-200 dark:border-slate-700",
+          "hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors",
           collapsed ? "justify-center px-0" : "gap-2.5 px-4",
         )}
       >
@@ -121,7 +129,7 @@ export function CollapsibleSidebar({ userRole, userName, userEmail }: Collapsibl
             Produce CRM
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Global search trigger */}
       {userRole !== "CONNECTOR" && (

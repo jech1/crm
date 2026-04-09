@@ -15,7 +15,8 @@
       "Bash(find:*)",
       "Bash(node:*)",
       "Bash(kill 53533)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data[0]['text']\\)\")"
     ]
   }
 }
