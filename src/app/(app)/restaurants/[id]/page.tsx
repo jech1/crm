@@ -103,6 +103,25 @@ export default async function RestaurantDetailPage({ params }: Props) {
   const canLog = true // access is always supporting/primary/admin after the "none" redirect above
   const isAdmin = user.role === "ADMIN"
 
+  // For admin and primary rep: fetch active users not already on this restaurant's team,
+  // so the "Add supporting rep" dropdown has the correct options.
+  const alreadyOnTeam = [
+    restaurant.repId,
+    ...restaurant.supportingReps.map((sr) => sr.userId),
+  ].filter((id): id is string => id !== null && id !== undefined)
+
+  const availableReps = canEdit
+    ? await db.user.findMany({
+        where: {
+          status: "ACTIVE",
+          role: { in: ["ADMIN", "SALES_REP"] },
+          id: { notIn: alreadyOnTeam },
+        },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      })
+    : []
+
   return (
     <div className="space-y-4">
       {/* Profile header — full width */}
@@ -160,7 +179,8 @@ export default async function RestaurantDetailPage({ params }: Props) {
             primaryRep={restaurant.rep}
             supportingReps={restaurant.supportingReps}
             creditAttributions={restaurant.creditAttributions}
-            isAdmin={isAdmin}
+            canManageTeam={canEdit}
+            availableReps={availableReps}
           />
           <ContactsSection contacts={restaurant.contacts} restaurantId={id} canEdit={canEdit} />
           <MeetingsSection

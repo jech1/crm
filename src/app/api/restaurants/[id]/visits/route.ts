@@ -60,9 +60,10 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     })
     if (!restaurant) return ApiResponse.notFound()
 
-    if (user.role === "SALES_REP" && restaurant.repId !== user.id) {
-      return ApiResponse.forbidden()
-    }
+    // Primary rep, supporting rep, and admin can all log visits.
+    // getRestaurantAccess returns "none" only if user has no relationship to this restaurant.
+    const access = await getRestaurantAccess(restaurantId, user.id, user.role, restaurant.repId)
+    if (access === "none") return ApiResponse.forbidden()
 
     const body = await req.json()
     const parsed = createVisitSchema.safeParse({ ...body, restaurantId })

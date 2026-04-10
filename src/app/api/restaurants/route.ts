@@ -35,22 +35,38 @@ export async function GET(req: NextRequest) {
     const sort = (searchParams.get("sort") ?? "updatedAt") as keyof Prisma.RestaurantOrderByWithRelationInput
     const order = (searchParams.get("order") ?? "desc") as "asc" | "desc"
 
-    // Reps can only see their assigned restaurants
-    const ownershipFilter = user.role === "ADMIN" ? repId ?? undefined : user.id
+    // Build ownership clause:
+    //   ADMIN — sees everything (optionally filtered by a specific repId)
+    //   SALES_REP — sees restaurants where they are the primary rep OR a supporting rep
+    const andClauses: Prisma.RestaurantWhereInput[] = []
 
-    const where: Prisma.RestaurantWhereInput = {
-      isArchived: false,
-      ...(ownershipFilter && { repId: ownershipFilter }),
-      ...(stage && { pipelineStage: stage }),
-      ...(zip && { zip }),
-      ...(city && { city }),
-      ...(q && {
+    if (user.role !== "ADMIN") {
+      andClauses.push({
+        OR: [
+          { repId: user.id },
+          { supportingReps: { some: { userId: user.id } } },
+        ],
+      })
+    } else if (repId) {
+      andClauses.push({ repId })
+    }
+
+    if (q) {
+      andClauses.push({
         OR: [
           { name: { contains: q, mode: "insensitive" } },
           { city: { contains: q, mode: "insensitive" } },
           { phone: { contains: q } },
         ],
-      }),
+      })
+    }
+
+    const where: Prisma.RestaurantWhereInput = {
+      isArchived: false,
+      ...(andClauses.length > 0 && { AND: andClauses }),
+      ...(stage && { pipelineStage: stage }),
+      ...(zip && { zip }),
+      ...(city && { city }),
     }
 
     const [restaurants, total] = await Promise.all([

@@ -1,8 +1,8 @@
 /**
  * /api/restaurants/[id]/team
  *
- * POST   — Add a supporting rep (admin only)
- * DELETE — Remove a supporting rep (admin only)
+ * POST   — Add a supporting rep (admin or primary rep)
+ * DELETE — Remove a supporting rep (admin or primary rep)
  */
 
 import { type NextRequest } from "next/server"
@@ -20,18 +20,21 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
     const { id: restaurantId } = await params
     const { user } = await getAuthContext()
 
-    if (user.role !== "ADMIN") {
-      throw Object.assign(new Error("Forbidden"), { statusCode: 403 })
-    }
-
-    const body = bodySchema.parse(await req.json())
-
-    // Ensure the restaurant exists
+    // Fetch restaurant first — needed for both the permission check and the
+    // primary-rep guard below.
     const restaurant = await db.restaurant.findUnique({
       where: { id: restaurantId },
       select: { id: true, repId: true },
     })
     if (!restaurant) throw Object.assign(new Error("Not found"), { statusCode: 404 })
+
+    // Admin or the primary rep can add supporting reps
+    const canManage = user.role === "ADMIN" || restaurant.repId === user.id
+    if (!canManage) {
+      throw Object.assign(new Error("Forbidden"), { statusCode: 403 })
+    }
+
+    const body = bodySchema.parse(await req.json())
 
     // Can't add the primary rep as a supporting rep
     if (restaurant.repId === body.userId) {
@@ -70,7 +73,15 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
     const { id: restaurantId } = await params
     const { user } = await getAuthContext()
 
-    if (user.role !== "ADMIN") {
+    const restaurant = await db.restaurant.findUnique({
+      where: { id: restaurantId },
+      select: { repId: true },
+    })
+    if (!restaurant) throw Object.assign(new Error("Not found"), { statusCode: 404 })
+
+    // Admin or the primary rep can remove supporting reps
+    const canManage = user.role === "ADMIN" || restaurant.repId === user.id
+    if (!canManage) {
       throw Object.assign(new Error("Forbidden"), { statusCode: 403 })
     }
 

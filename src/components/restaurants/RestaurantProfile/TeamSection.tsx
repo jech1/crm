@@ -2,13 +2,16 @@
 
 /**
  * TeamSection — shows the restaurant's primary rep, supporting reps,
- * and credit attribution percentages. Admin-only management link.
+ * and credit attribution percentages.
+ *
+ * canManageTeam is true for ADMIN and the primary rep. When true:
+ *   - "Add supporting rep" form is shown (uses availableReps dropdown)
+ *   - Remove (×) button appears on each supporting rep row
  */
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Users, Crown, Star, Percent } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Users, Crown, Star, Percent, Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface RepUser {
@@ -33,12 +36,20 @@ interface CreditAttribution {
   user: { id: string; name: string; avatarUrl: string | null }
 }
 
+interface AvailableRep {
+  id: string
+  name: string
+}
+
 interface TeamSectionProps {
   restaurantId: string
   primaryRep: RepUser | null
   supportingReps: SupportingRep[]
   creditAttributions: CreditAttribution[]
-  isAdmin: boolean
+  /** True for ADMIN and the primary rep — can add and remove supporting reps */
+  canManageTeam: boolean
+  /** Active users who are not already on this restaurant's team */
+  availableReps: AvailableRep[]
 }
 
 function Avatar({ user }: { user: { name: string; avatarUrl: string | null } }) {
@@ -63,11 +74,18 @@ export function TeamSection({
   primaryRep,
   supportingReps,
   creditAttributions,
-  isAdmin,
+  canManageTeam,
+  availableReps,
 }: TeamSectionProps) {
   const router = useRouter()
+
   const [removingId, setRemovingId] = useState<string | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
+
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState("")
+  const [adding, setAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
 
   async function handleRemoveSupportingRep(repUserId: string) {
     if (!confirm("Remove this supporting rep?")) return
@@ -92,6 +110,31 @@ export function TeamSection({
     }
   }
 
+  async function handleAddSupportingRep() {
+    if (!selectedUserId) return
+    setAdding(true)
+    setAddError(null)
+    try {
+      const res = await fetch(`/api/restaurants/${restaurantId}/team`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: selectedUserId }),
+      })
+      if (res.ok) {
+        setShowAddForm(false)
+        setSelectedUserId("")
+        router.refresh()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setAddError(data.error ?? "Failed to add rep. Please try again.")
+      }
+    } catch {
+      setAddError("Network error. Please try again.")
+    } finally {
+      setAdding(false)
+    }
+  }
+
   const hasCreditData = creditAttributions.length > 0
 
   return (
@@ -101,18 +144,21 @@ export function TeamSection({
           <Users className="h-3.5 w-3.5 text-slate-400" />
           Team
         </h2>
-        {isAdmin && (
-          <a
-            href={`/restaurants/${restaurantId}/edit#team`}
-            className="text-xs text-blue-600 hover:underline"
+        {canManageTeam && !showAddForm && availableReps.length > 0 && (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
           >
-            Manage
-          </a>
+            <Plus className="h-3 w-3" />
+            Add rep
+          </button>
         )}
       </div>
 
       {removeError && (
-        <p className="text-xs text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{removeError}</p>
+        <p className="text-xs text-red-600 bg-red-50 dark:bg-red-900/20 rounded-md px-3 py-2 mb-3">
+          {removeError}
+        </p>
       )}
 
       <div className="space-y-3">
@@ -135,38 +181,92 @@ export function TeamSection({
 
         {/* Supporting reps */}
         {supportingReps.length > 0 && (
-          <>
-            <div className="border-t dark:border-slate-700 pt-3">
-              <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
-                Supporting
-              </p>
-              <div className="space-y-2">
-                {supportingReps.map((sr) => (
-                  <div key={sr.id} className="flex items-center gap-2.5 group">
-                    <Avatar user={sr.user} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{sr.user.name}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{sr.user.email}</p>
-                    </div>
-                    <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded border border-blue-200">
-                      <Star className="h-2.5 w-2.5" />
-                      Support
-                    </span>
-                    {isAdmin && (
-                      <button
-                        onClick={() => handleRemoveSupportingRep(sr.userId)}
-                        disabled={removingId === sr.userId}
-                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity text-xs ml-1"
-                        title="Remove"
-                      >
-                        ×
-                      </button>
-                    )}
+          <div className="border-t dark:border-slate-700 pt-3">
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+              Supporting
+            </p>
+            <div className="space-y-2">
+              {supportingReps.map((sr) => (
+                <div key={sr.id} className="flex items-center gap-2.5 group">
+                  <Avatar user={sr.user} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{sr.user.name}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{sr.user.email}</p>
                   </div>
-                ))}
-              </div>
+                  <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded border border-blue-200">
+                    <Star className="h-2.5 w-2.5" />
+                    Support
+                  </span>
+                  {canManageTeam && (
+                    <button
+                      onClick={() => handleRemoveSupportingRep(sr.userId)}
+                      disabled={removingId === sr.userId}
+                      className="opacity-0 group-hover:opacity-100 flex items-center justify-center h-5 w-5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all ml-1"
+                      title="Remove supporting rep"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          </>
+          </div>
+        )}
+
+        {/* Add supporting rep form */}
+        {canManageTeam && showAddForm && (
+          <div className="border-t dark:border-slate-700 pt-3">
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+              Add supporting rep
+            </p>
+            {addError && (
+              <p className="text-xs text-red-600 bg-red-50 dark:bg-red-900/20 rounded-md px-2 py-1.5 mb-2">
+                {addError}
+              </p>
+            )}
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                className={cn(
+                  "flex-1 text-xs rounded-md border border-slate-200 dark:border-slate-600",
+                  "bg-white dark:bg-slate-700 text-slate-900 dark:text-white",
+                  "px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500",
+                )}
+              >
+                <option value="">Select a rep…</option>
+                {availableReps.map((rep) => (
+                  <option key={rep.id} value={rep.id}>
+                    {rep.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleAddSupportingRep}
+                disabled={!selectedUserId || adding}
+                className={cn(
+                  "text-xs px-3 py-1.5 rounded-md font-medium transition-colors",
+                  "bg-green-600 text-white hover:bg-green-700",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                )}
+              >
+                {adding ? "Adding…" : "Add"}
+              </button>
+              <button
+                onClick={() => { setShowAddForm(false); setSelectedUserId(""); setAddError(null) }}
+                className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {supportingReps.length === 0 && !hasCreditData && !showAddForm && (
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-1">
+            No supporting reps
+          </p>
         )}
 
         {/* Credit attribution */}
@@ -199,12 +299,6 @@ export function TeamSection({
               ))}
             </div>
           </div>
-        )}
-
-        {supportingReps.length === 0 && !hasCreditData && (
-          <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-1">
-            No supporting reps
-          </p>
         )}
       </div>
     </div>
